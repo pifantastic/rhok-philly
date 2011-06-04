@@ -2,7 +2,7 @@ CREATE TYPE SOURCE AS ENUM('sat','ground');
 
 CREATE TABLE location (
   locid SERIAL UNIQUE,
-  sourceid SOURCE,
+  sourceid SOURCE NOT NULL,
   lat NUMERIC NOT NULL,
   lng NUMERIC NOT NULL,
   locname TEXT
