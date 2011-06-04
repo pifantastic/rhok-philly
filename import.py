@@ -74,16 +74,16 @@ def insert_csv(csv_path):
 
     header = data.pop(0)    
 
-    ids, names, lats, longs = zip(*data)
+    station_ids, station_names, lats, longs = zip(*data)
 
     dbconn = psycopg2.connect(PGSQL_CONN_STRING)
     curs = dbconn.cursor()
 
     for i in range(len(ids)):
         curs.execute(
-            "INSERT INTO location(sourceid,lat,lng,locname)"\
+            "INSERT INTO location(sourceid,lat,lng,stationid,locname)"\
             "VALUES (%s,%s,%s,%s);",\
-            ("ground",lats[i],longs[i],names[i]))
+            ("ground",lats[i],longs[i],station_ids[i],station_names[i]))
     dbconn.commit()
   
 if __name__ == "__main__":
