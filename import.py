@@ -66,10 +66,6 @@ def fetch_nasa_data(lat=10, lng=10):
     cur.execute("INSERT INTO geodata (locid, date, solarradiation, tempmax, tempmin, tempmedian, rain, wind, dewpoint, humidity) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
       (locid, date, data[2], data[3], data[4], data[8], data[5], data[6], data[7], data[9]))
     conn.commit()
-  
-  conn.close()
-
-  location_csv = "data/local_weather.csv"
 
 def insert_csv(csv_path):
     data = []
