@@ -10,10 +10,12 @@ Synopsis: nasa.py
 	
 """
 
-import sys, urllib, urllib2, getopt, psycopg2, csv, datetime
+import sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config
 
 VERSION = '0.1'
-PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % ('', '', '')
+PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBUSER, config.DBPASS)
+
+conn = psycopg2.connect(PGSQL_CONN_STRING)
 
 def usage(exit_code=0): 
   print __doc__ % globals()
@@ -47,22 +49,19 @@ def fetch_nasa_data(lat=10, lng=10):
   lines = response.read().strip().split("\n")
   headers = flip(lines[5].split(None))
   
-  conn = psycopg2.connect(PGSQL_CONN_STRING)
   cur = conn.cursor()
 
   # Does this sattelite have a location?
   cur.execute("SELECT locid from location WHERE lat = %s AND lng = %s AND sourceid = 'sat';", (lat, lng))
   location = cur.fetchone()
   
-  if location:
-    locid = location[0]
-    print("Location already existed: %s" % locid)
-  else:
-    cur.execute("INSERT INTO location (sourceid, lat, lng) VALUES ('sat', %s, %s);", (lat, lng))
+  if location is None:
+    cur.execute("INSERT INTO location (sourceid, lat, lng) VALUES ('sat', %s, %s) RETURNING locid;", (lat, lng))
     conn.commit()
-    locid = cur.lastrowid
-    print("New location: %s" % locid)
-      
+    location = cur.fetchone()
+  
+  locid = location[0]      
+  
   for data in lines[6:]:
     data = data.split(None)
     date = datetime.date(int(data[0]), 1, 1) + datetime.timedelta(int(row[1]) - 1)
