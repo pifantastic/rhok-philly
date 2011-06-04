@@ -8,16 +8,18 @@ Synopsis: nasa.py
 	-h  This help message
 	-s  Import satellite data
 	-g  Import ground data
+	-c  Create database
 """
 
-import sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config
+import os, sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config
 
 VERSION = '0.1'
 IMPORT_SAT = False
 IMPORT_GROUND = False
+CREATE_DB = False
 PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBUSER, config.DBPASS)
 
-conn = psycopg2.connect(PGSQL_CONN_STRING)
+# conn = psycopg2.connect(PGSQL_CONN_STRING)
 
 def usage(exit_code=0): 
   print __doc__ % globals()
@@ -90,7 +92,7 @@ def insert_csv(csv_path):
   
 if __name__ == "__main__":
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hgs")
+    opts, args = getopt.getopt(sys.argv[1:], "hgsc")
   except getopt.GetoptError, err:
     print str(err)
     usage(1)
@@ -99,7 +101,13 @@ if __name__ == "__main__":
     if o == "-h": usage()
     elif o == "-g": IMPORT_GROUND = True
     elif o == "-s": IMPORT_SAT = True
+    elif o == "-c": CREATE_DB = True
     else: assert False, "unhandled option"
+
+  if CREATE_DB:
+    os.system("createdb %s" % (config.DBNAME))
+    os.system("psql -d %s -f %s" % (config.DBNAME, 'schema.sql')) # Must be in the current dir :(
+  conn = psycopg2.connect(PGSQL_CONN_STRING)
 
   if IMPORT_SAT:
     reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',')
