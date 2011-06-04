@@ -21,12 +21,6 @@ def usage(exit_code=0):
   print __doc__ % globals()
   sys.exit(exit_code)
 
-def flip(arr):
-  d = {}
-  for i in range(len(arr)):
-    d[arr[i]] = i
-  return d
-
 def fetch_nasa_data(lat=10, lng=10):  
   NASA_URL = 'http://earth-www.larc.nasa.gov/cgi-bin/cgiwrap/solar/agro.cgi?email=agroclim@larc.nasa.gov'
 
@@ -37,7 +31,7 @@ def fetch_nasa_data(lat=10, lng=10):
     'lon': lng,
     'ms': 1,
     'ds': 1,
-    'ys': 2011,
+    'ys': 1983,
     'me': 12,
     'de': 31,
     'ye': 2011,
@@ -47,7 +41,6 @@ def fetch_nasa_data(lat=10, lng=10):
   request = urllib2.Request(NASA_URL, urllib.urlencode(params))
   response = urllib2.urlopen(request)
   lines = response.read().strip().split("\n")
-  headers = flip(lines[5].split(None))
   
   cur = conn.cursor()
 
@@ -80,10 +73,8 @@ if __name__ == "__main__":
     usage(1)
 
   for o, a in opts:
-    if o == "-h":
-      usage()
-    else:
-      assert False, "unhandled option"
+    if o == "-h": usage()
+    else: assert False, "unhandled option"
 
   reader = csv.reader(open('grid-sample-unique.csv', 'rU'), delimiter=',')
   reader.next()
@@ -91,4 +82,3 @@ if __name__ == "__main__":
   for row in reader:
     print("Fetching weather data for lat=%s, lng=%s" %(row[0], row[1]))
     fetch_nasa_data(row[0], row[1])
-
