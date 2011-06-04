@@ -9,6 +9,7 @@ CREATE TABLE location (
 );
 CREATE TABLE geodata (
   geodataid SERIAL UNIQUE,
+  date DATE,
   locid INTEGER REFERENCES location(locid),
   solarradiation DOUBLE PRECISION,
   tempmax DOUBLE PRECISION,
