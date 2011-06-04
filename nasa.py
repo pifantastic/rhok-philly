@@ -76,7 +76,7 @@ if __name__ == "__main__":
     if o == "-h": usage()
     else: assert False, "unhandled option"
 
-  reader = csv.reader(open('grid-sample-unique.csv', 'rU'), delimiter=',')
+  reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',')
   reader.next()
   
   for row in reader:
