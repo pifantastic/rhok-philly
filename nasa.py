@@ -6,13 +6,15 @@ NASA Data Importer v%(VERSION)s
 Synopsis: nasa.py
 
 	-h  This help message
-	-l  CSV file containing station data
-	
+	-s  Import satellite data
+	-g  Import ground data
 """
 
 import sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config
 
 VERSION = '0.1'
+IMPORT_SAT = False
+IMPORT_GROUND = False
 PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBUSER, config.DBPASS)
 
 conn = psycopg2.connect(PGSQL_CONN_STRING)
@@ -64,21 +66,48 @@ def fetch_nasa_data(lat=10, lng=10):
     conn.commit()
   
   conn.close()
+
+  location_csv = "data/local_weather.csv"
+
+def insert_csv(csv_path):
+    data = []
+    for row in csv.reader(open(csv_path)):
+        data.append(row)
+
+    header = data.pop(0)    
+
+    ids, names, lats, longs = zip(*data)
+
+    dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+    curs = dbconn.cursor()
+
+    for i in range(len(ids)):
+        curs.execute(
+            "INSERT INTO location(sourceid,lat,lng,locname)"\
+            "VALUES (%s,%s,%s,%s);",\
+            ("ground",lats[i],longs[i],names[i]))
+    dbconn.commit()
   
 if __name__ == "__main__":
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "h")
+    opts, args = getopt.getopt(sys.argv[1:], "hgs")
   except getopt.GetoptError, err:
     print str(err)
     usage(1)
 
   for o, a in opts:
     if o == "-h": usage()
+    elif o == "-g": IMPORT_GROUND = True
+    elif o == "-s": IMPORT_SAT = True
     else: assert False, "unhandled option"
 
-  reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',')
-  reader.next()
+  if IMPORT_SAT:
+    reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',')
+    reader.next()
   
-  for row in reader:
-    print("Fetching weather data for lat=%s, lng=%s" %(row[0], row[1]))
-    fetch_nasa_data(row[0], row[1])
+    for row in reader:
+      print("Fetching weather data for lat=%s, lng=%s" %(row[0], row[1]))
+      fetch_nasa_data(row[0], row[1])
+  
+  if IMPORT_GROUND:
+    insert_csv('data/local_weather.csv')
