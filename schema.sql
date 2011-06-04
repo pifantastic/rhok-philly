@@ -5,6 +5,7 @@ CREATE TABLE location (
   sourceid SOURCE NOT NULL,
   lat NUMERIC NOT NULL,
   lng NUMERIC NOT NULL,
+  stationid INT UNIQUE,
   locname TEXT
 );
 CREATE TABLE geodata (
