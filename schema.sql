@@ -5,12 +5,12 @@ CREATE TABLE source (
 CREATE TABLE location (
   locid SERIAL UNIQUE,
   sourceid INTEGER REFERENCES source(sourceid),
-  latit NUMERIC NOT NULL,
-  longit NUMERIC NOT NULL,
+  lat NUMERIC NOT NULL,
+  lng NUMERIC NOT NULL,
   locname TEXT
 );
 CREATE TABLE geodata (
-  geodatid SERIAL UNIQUE,
+  geodataid SERIAL UNIQUE,
   locid INTEGER REFERENCES location(locid),
   solarradiation DOUBLE PRECISION,
   tempmax DOUBLE PRECISION,
