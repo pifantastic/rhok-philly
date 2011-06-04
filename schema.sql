@@ -1,7 +1,3 @@
-CREATE TABLE source (
-  sourceid SERIAL UNIQUE,
-  sourcename TEXT
-);
 CREATE TABLE location (
   locid SERIAL UNIQUE,
   sourceid INTEGER REFERENCES source(sourceid),
