@@ -11,8 +11,14 @@ Create the database and define tables: `python import.py -c`
 Import ground station data: `python import.py -g`
 Import satellite data: `python import.py -s`
 
+## Usage
+
+Query functions and graphing functions are in analysis.py.
+Current usage requires specifying the graphs to generate via function calls at the bottom of analysis.py.
+
 ## Future Work
-   [ ] Change source of ground data to use ftp source
+   [ ] Extend the range of graphing functions and abstract some of the query structure for flexibility.
+   [ ] Change source of ground data to use ftp source.
    [ ] Create functions to update database with new weather data and automate checking ftp / online sources
    [ ] When graphing, handle -99 values from data sources that were not available in certain years.  
 	 >> Current solution requires deleting those values from the database. See CLEANUP for explanation.
