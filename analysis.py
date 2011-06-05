@@ -70,8 +70,10 @@ def graph_monthly_temp(result_tuples):
   plt.scatter(f_longs,f_lats,marker='o',c='b',s=len(f_lats))
   #plt.xlim(-22,-10)
   #plt.ylim(-70,-57)
-  plt.title('griddata test')
-  plt.savefig('temperature.png',dpi=150)
+  plt.title('Maximum Temperatures For Month')
+  plt.savefig(qtype+'_temperature.png',dpi=150)
+  plt.xlabel("Longitude")
+  plt.ylabel("Latitude")
   plt.figure()
   
 def deprecated_graph_monthly_temp(month_num):
