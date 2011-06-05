@@ -117,6 +117,27 @@ def insert_ground_data():
             "INSERT INTO geodata(locid,date,tempmax,tempmin) VALUES (%s,%s,%s,%s);",\
             (file_locid,datalist[0],datalist[1],datalist[2]))
         dbconn.commit()
+        
+  precip_files = glob.glob(config.GROUNDDATAPATH + "PCP_*.dbf")
+  dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  for filename in precip_files:
+    source_num = int(filename.split("_")[-1].split(".")[0]) + 100
+    # The files are named with numbers that don't line up with weather station
+    # id numbers. We have to add 100 to the numbers in the file names so we
+    # can match the station id numbers specified in the ground location csv.
+    cur = dbconn.cursor()
+    cur.execute("SELECT locid FROM location WHERE stationid = %s;", (str(source_num),))
+    file_locid = cur.fetchone()[0]
+
+    dbf_string_lines = parse_ground_dbf(filename)
+    for line in dbf_string_lines:
+	datalist = line.split(",")
+	curs = dbconn.cursor()
+	curs.execute(
+            "INSERT INTO geodata(locid,date,rain) VALUES (%s,%s,%s);",\
+            (file_locid,datalist[0],datalist[1]))
+        dbconn.commit()    
+          
 
 if __name__ == "__main__":
   try:
