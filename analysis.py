@@ -24,7 +24,13 @@ def get_monthly_tempmax_averages():
     "AS myquery JOIN location ON location.locid=myquery.locid;")
   return curs.fetchall()
 
-def get_month_tempmax_averages(month):
+def get_month_tempmax_averages(month,qtype):
+  """
+  Inputs:
+  month = numeric (1-12), what month you want
+  qtype = 'sat' or 'ground'
+
+  """
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
   # Get average maximum temperature (from 2 years of data) for given month. 
@@ -32,15 +38,15 @@ def get_month_tempmax_averages(month):
   curs.execute("SELECT lat,lng,avgtmpmax FROM "+\
     "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
     "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
-    "WHERE locid IN (SELECT locid FROM location WHERE sourceid='ground') "+\
+    "WHERE locid IN (SELECT locid FROM location WHERE sourceid=%s) "+\
     "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
-    "AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=%s", (month,))
+    "AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=%s", (qtype,month))
   return curs.fetchall()
     
 
 def graph_monthly_temp(month_num):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
-  result_tuples = get_month_tempmax_averages(month_num) 
+  result_tuples = get_month_tempmax_averages(month_num,'ground') 
   lats, longs, temps = zip(*result_tuples)
   
   f_lats = [float(item) for item in lats]
@@ -49,10 +55,10 @@ def graph_monthly_temp(month_num):
   print f_temps
   
   # define grid.
-  #yi = np.linspace(-22.0,-10.0,100) # Based on range of latitudes for the country data
-  #xi = np.linspace(-70.0,-57.0,100) # Based on longitudes (East/West)
-  yi = np.linspace(-30.0,0.0,100) # Based on range of latitudes for the country data
-  xi = np.linspace(-70.0,-40.0,100) # Based on longitudes (East/West)  
+  yi = np.linspace(-22.0,-10.0,100) # Based on range of latitudes for the country data
+  xi = np.linspace(-70.0,-57.0,100) # Based on longitudes (East/West)
+	#  yi = np.linspace(-30.0,0.0,100) # Based on range of latitudes for the country data
+	#  xi = np.linspace(-70.0,-40.0,100) # Based on longitudes (East/West)  
 
 
   # grid the data.
@@ -67,12 +73,12 @@ def graph_monthly_temp(month_num):
   #plt.xlim(-22,-10)
   #plt.ylim(-70,-57)
   plt.title('griddata test')
-  plt.show()
   plt.savefig('temperature.png',dpi=150)
+  plt.show()
   
 def deprecated_graph_monthly_temp(month_num):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
-  result_tuples = get_month_tempmax_averages(month_num) 
+  result_tuples = get_month_tempmax_averages(month_num,'ground') 
   lats, longs, temps = zip(*result_tuples)
   
   f_lats = [float(item) for item in lats]
