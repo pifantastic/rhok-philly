@@ -17,4 +17,4 @@ def get_data_by_date(querydate):
   curs.fetchall()
   print curs
   
-get_data_by_date("89-01-01")
+get_data_by_date("1989-01-01")
