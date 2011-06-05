@@ -69,7 +69,8 @@ def fetch_nasa_data(lat=10, lng=10):
   
   for data in lines[6:]:
     data = data.split(None)
-    date = datetime.date(int(data[0]), 1, 1) + datetime.timedelta(days=int(row[1]) - 1)
+    print("Fetching for " + data[0] + " plus " + str(int(data[1]) - 1) + "\n")
+    date = datetime.date(int(data[0]), 1, 1) + datetime.timedelta(days=int(data[1]) - 1)
     
     cur.execute("INSERT INTO geodata (locid, date, solarradiation, tempmax, tempmin, tempmedian, rain, wind, dewpoint, humidity) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
       (locid, date, data[2], data[3], data[4], data[8], data[5], data[6], data[7], data[9]))
