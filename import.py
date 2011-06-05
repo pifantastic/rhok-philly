@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
 """
-NASA Data Importer v%(VERSION)s
+Data Importer v%(VERSION)s
  
-Synopsis: nasa.py
+Synopsis: import.py
 
 	-h  This help message
 	-s  Import satellite data
@@ -101,6 +101,7 @@ def insert_ground_data():
   temperature_files = glob.glob(config.GROUNDDATAPATH + "TMP_*.dbf")
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   for filename in temperature_files:
+    print filename, "-->" 
     source_num = int(filename.split("_")[-1].split(".")[0]) + 100
     # The files are named with numbers that don't line up with weather station
     # id numbers. We have to add 100 to the numbers in the file names so we
@@ -123,6 +124,7 @@ def insert_ground_data():
   precip_files = glob.glob(config.GROUNDDATAPATH + "PCP_*.dbf")
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   for filename in precip_files:
+    print filename, "-->"
     source_num = int(filename.split("_")[-1].split(".")[0]) + 100
     # The files are named with numbers that don't line up with weather station
     # id numbers. We have to add 100 to the numbers in the file names so we
