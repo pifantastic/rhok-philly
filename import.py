@@ -24,6 +24,7 @@ IMPORT_GROUND = False
 CREATE_DB = False
 PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBUSER, config.DBPASS)
 
+
 # conn = psycopg2.connect(PGSQL_CONN_STRING)
 
 def usage(exit_code=0): 
@@ -97,7 +98,7 @@ def parse_ground_dbf(dbf_path):
   return subprocess.check_output(["dbfxtrct", "-i%s" %(dbf_path)]).split()
 
 def insert_ground_data():
-  temperature_files = glob.glob("/home/kepod/code/rhok/data/Clima/TMP_*.dbf")
+  temperature_files = glob.glob(config.GROUNDDATAPATH + "TMP_*.dbf")
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   for filename in temperature_files:
     source_num = int(filename.split("_")[-1].split(".")[0]) + 100
@@ -145,5 +146,5 @@ if __name__ == "__main__":
       fetch_nasa_data(row[0], row[1])
   
   if IMPORT_GROUND:
-    #insert_ground_loc_csv('data/local_weather.csv')
+    insert_ground_loc_csv('data/local_weather.csv')
     insert_ground_data()
