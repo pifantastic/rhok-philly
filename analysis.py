@@ -100,8 +100,9 @@ def deprecated_graph_monthly_temp(month_num):
 
   plt.show()
 
-result = get_month_tempmax_averages(10,'ground') 
+month = 10
+result = get_month_tempmax_averages(month,'ground') 
 graph_monthly_temp(result,'ground')
-sat_result = get_month_tempmax_averages(10,'sat') 
+sat_result = get_month_tempmax_averages(month,'sat') 
 graph_monthly_temp(sat_result,'sat')
 plt.show()
