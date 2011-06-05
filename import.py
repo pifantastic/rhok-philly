@@ -9,9 +9,14 @@ Synopsis: nasa.py
 	-s  Import satellite data
 	-g  Import ground data
 	-c  Create database
+	
+	Requires Python 2.7
 """
 
-import os, sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config
+import os, sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config, glob, subprocess
+if sys.version < '2.7':
+  print "Requires Python 2.7! You have ", sys.version
+  sys.exit(8)
 
 VERSION = '0.1'
 IMPORT_SAT = False
@@ -48,7 +53,7 @@ def fetch_nasa_data(lat=10, lng=10):
   
   cur = conn.cursor()
 
-  # Does this sattelite have a location?
+  # Does this satellite have a location?
   cur.execute("SELECT locid from location WHERE lat = %s AND lng = %s AND sourceid = 'sat';", (lat, lng))
   location = cur.fetchone()
   
@@ -67,25 +72,51 @@ def fetch_nasa_data(lat=10, lng=10):
       (locid, date, data[2], data[3], data[4], data[8], data[5], data[6], data[7], data[9]))
     conn.commit()
 
-def insert_csv(csv_path):
-    data = []
-    for row in csv.reader(open(csv_path)):
-        data.append(row)
+def insert_ground_loc_csv(csv_path):
+  data = []
+  for row in csv.reader(open(csv_path)):
+    data.append(row)
 
-    header = data.pop(0)    
+  header = data.pop(0)    
 
-    station_ids, station_names, lats, longs = zip(*data)
+  station_ids, station_names, lats, longs = zip(*data)
 
-    dbconn = psycopg2.connect(PGSQL_CONN_STRING)
-    curs = dbconn.cursor()
+  dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  curs = dbconn.cursor()
 
-    for i in range(len(ids)):
-        curs.execute(
-            "INSERT INTO location(sourceid,lat,lng,stationid,locname)"\
-            "VALUES (%s,%s,%s,%s);",\
-            ("ground",lats[i],longs[i],station_ids[i],station_names[i]))
-    dbconn.commit()
-  
+  for i in range(len(station_ids)):
+    curs.execute(
+      "INSERT INTO location(sourceid,lat,lng,stationid,locname)"\
+      "VALUES (%s,%s,%s,%s,%s);",\
+      ("ground",lats[i],longs[i],station_ids[i].split(".")[0],station_names[i]))
+      # Had to split station_ids at the decimal because string float needs to be an int.
+      # Left it as a string int because the %s insertion expects a string anyway.
+  dbconn.commit()
+
+def parse_ground_dbf(dbf_path):
+  return subprocess.check_output(["dbfxtrct", "-i%s" %(dbf_path)]).split()
+
+def insert_ground_data():
+  temperature_files = glob.glob("/home/kepod/code/rhok/data/Clima/TMP_*.dbf")
+  dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  for filename in temperature_files:
+    source_num = int(filename.split("_")[-1].split(".")[0]) + 100
+    # The files are named with numbers that don't line up with weather station
+    # id numbers. We have to add 100 to the numbers in the file names so we
+    # can match the station id numbers specified in the ground location csv.
+    cur = dbconn.cursor()
+    cur.execute("SELECT locid FROM location WHERE stationid = %s;", (str(source_num),))
+    file_locid = cur.fetchone()[0]
+
+    dbf_string_lines = parse_ground_dbf(filename)
+    for line in dbf_string_lines:
+	datalist = line.split(",")
+	curs = dbconn.cursor()
+	curs.execute(
+            "INSERT INTO geodata(locid,date,tempmax,tempmin) VALUES (%s,%s,%s,%s);",\
+            (file_locid,datalist[0],datalist[1],datalist[2]))
+        dbconn.commit()
+
 if __name__ == "__main__":
   try:
     opts, args = getopt.getopt(sys.argv[1:], "hgsc")
@@ -114,4 +145,5 @@ if __name__ == "__main__":
       fetch_nasa_data(row[0], row[1])
   
   if IMPORT_GROUND:
-    insert_csv('data/local_weather.csv')
+    #insert_ground_loc_csv('data/local_weather.csv')
+    insert_ground_data()
