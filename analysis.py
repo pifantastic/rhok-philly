@@ -44,9 +44,8 @@ def get_month_tempmax_averages(month,qtype):
   return curs.fetchall()
     
 
-def graph_monthly_temp(month_num):
+def graph_monthly_temp(result_tuples):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
-  result_tuples = get_month_tempmax_averages(month_num,'ground') 
   lats, longs, temps = zip(*result_tuples)
   
   f_lats = [float(item) for item in lats]
@@ -59,7 +58,6 @@ def graph_monthly_temp(month_num):
   xi = np.linspace(-70.0,-57.0,100) # Based on longitudes (East/West)
 	#  yi = np.linspace(-30.0,0.0,100) # Based on range of latitudes for the country data
 	#  xi = np.linspace(-70.0,-40.0,100) # Based on longitudes (East/West)  
-
 
   # grid the data.
   zi = griddata((f_longs,f_lats),f_temps,(xi[None,:],yi[:,None]),method='linear')
@@ -74,7 +72,7 @@ def graph_monthly_temp(month_num):
   #plt.ylim(-70,-57)
   plt.title('griddata test')
   plt.savefig('temperature.png',dpi=150)
-  plt.show()
+  plt.figure()
   
 def deprecated_graph_monthly_temp(month_num):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
@@ -100,4 +98,8 @@ def deprecated_graph_monthly_temp(month_num):
 
   plt.show()
 
-graph_monthly_temp(4)
+result = get_month_tempmax_averages(4,'ground') 
+graph_monthly_temp(result)
+sat_result = get_month_tempmax_averages(4,'sat') 
+graph_monthly_temp(sat_result)
+plt.show()
