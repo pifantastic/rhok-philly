@@ -17,6 +17,7 @@ Query functions and graphing functions are in analysis.py.
 Current usage requires specifying the graphs to generate via function calls at the bottom of analysis.py.
 
 ## Future Work
+   [ ] Investigate bugs in NASA importing (getting correct months?)
    [ ] Extend the range of graphing functions and abstract some of the query structure for flexibility.
    [ ] Change source of ground data to use ftp source.
    [ ] Create functions to update database with new weather data and automate checking ftp / online sources
