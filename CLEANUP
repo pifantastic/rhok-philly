@@ -1,0 +1,12 @@
+Quick hack to remove data from database that's missing:
+
+To find the stations:
+SELECT myq.locid FROM (SELECT lat,lng,myquery.locid,monthtime,avgtmpmax FROM (SELECT locid,EXTRACT(month FROM geodata.date) AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata WHERE locid IN (SELECT locid FROM location WHERE sourceid='ground') GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=4) AS myq WHERE avgtmpmax=-99;
+
+We noticed that the changes were from stations with a locationid 116-127.
+These are the last stations, and were presumably setup last; they probably came online after the very early years from which we're sampling.
+
+We deleted these stations from the database so they would not affect our analysis; otherwise the -99s were interpolated oddly into the topo-maps (equivalent to an area that legitimately had an average temperature of -99 degrees).
+
+DELETE FROM geodata WHERE (locid > 115) AND (locid < 128);
+
