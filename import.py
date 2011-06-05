@@ -109,7 +109,7 @@ def insert_ground_data():
     cur = dbconn.cursor()
     cur.execute("SELECT locid FROM location WHERE stationid = %s;", (str(source_num),))
     result = cur.fetchone()
-    if result=None:
+    if result==None:
       print "No station location with station id", source_num
     else:
       file_locid = result[0]
@@ -136,7 +136,7 @@ def insert_ground_data():
     cur = dbconn.cursor()
     cur.execute("SELECT locid FROM location WHERE stationid = %s;", (str(source_num),))
     result = cur.fetchone()
-    if result=None:
+    if result==None:
       print "No station location with station id", source_num
     else:
       file_locid = result[0]
