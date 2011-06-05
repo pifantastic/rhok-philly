@@ -44,7 +44,7 @@ def get_month_tempmax_averages(month,qtype):
   return curs.fetchall()
     
 
-def graph_monthly_temp(result_tuples):
+def graph_monthly_temp(result_tuples,qtype):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
   lats, longs, temps = zip(*result_tuples)
   
@@ -101,7 +101,7 @@ def deprecated_graph_monthly_temp(month_num):
   plt.show()
 
 result = get_month_tempmax_averages(10,'ground') 
-graph_monthly_temp(result)
+graph_monthly_temp(result,'ground')
 sat_result = get_month_tempmax_averages(10,'sat') 
-graph_monthly_temp(sat_result)
+graph_monthly_temp(sat_result,'sat')
 plt.show()
