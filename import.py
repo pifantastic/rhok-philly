@@ -34,6 +34,8 @@ def usage(exit_code=0):
 def fetch_nasa_data(lat=10, lng=10):  
   NASA_URL = 'http://earth-www.larc.nasa.gov/cgi-bin/cgiwrap/solar/agro.cgi?email=agroclim@larc.nasa.gov'
 
+  # Original: 1983-2011
+  # Now: 1989-1990
   params = {
     'email': 'agroclim@larc.nasa.gov',
     'step': 1,
@@ -41,10 +43,10 @@ def fetch_nasa_data(lat=10, lng=10):
     'lon': lng,
     'ms': 1,
     'ds': 1,
-    'ys': 1983,
+    'ys': 1989,
     'me': 12,
     'de': 31,
-    'ye': 2011,
+    'ye': 1990,
     'submit': 'Yes'
   }
 

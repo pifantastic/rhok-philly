@@ -98,8 +98,8 @@ def deprecated_graph_monthly_temp(month_num):
 
   plt.show()
 
-result = get_month_tempmax_averages(4,'ground') 
+result = get_month_tempmax_averages(10,'ground') 
 graph_monthly_temp(result)
-sat_result = get_month_tempmax_averages(4,'sat') 
+sat_result = get_month_tempmax_averages(10,'sat') 
 graph_monthly_temp(sat_result)
 plt.show()
