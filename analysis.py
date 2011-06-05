@@ -68,6 +68,7 @@ def graph_monthly_temp(month_num):
   #plt.ylim(-70,-57)
   plt.title('griddata test')
   plt.show()
+  plt.savefig('temperature.png',dpi=150)
   
 def deprecated_graph_monthly_temp(month_num):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
