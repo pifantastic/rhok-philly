@@ -16,5 +16,6 @@ def get_data_by_date(querydate):
   curs.execute("SELECT lat,lng,myquery.locid,monthtime,avgtmpmax FROM (SELECT locid,EXTRACT(month FROM geodata.date) AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata WHERE locid IN (SELECT locid FROM location WHERE sourceid='ground') GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) AS myquery JOIN location ON location.locid=myquery.locid;", (querydate,))
   curs.fetchall()
   print curs
-  
+
+ 
 get_data_by_date("1989-01-01")
