@@ -110,13 +110,15 @@ def insert_ground_data():
     file_locid = cur.fetchone()[0]
 
     dbf_string_lines = parse_ground_dbf(filename)
-    for line in dbf_string_lines:
-	datalist = line.split(",")
-	curs = dbconn.cursor()
-	curs.execute(
+    #for line in dbf_string_lines:
+      #datalist = line.split(",")
+    for j in range(730): # Temporarily limiting to the first year of data because there's so much
+      datalist = dbf_string_lines[j].split(",")
+      curs = dbconn.cursor()
+      curs.execute(
             "INSERT INTO geodata(locid,date,tempmax,tempmin) VALUES (%s,%s,%s,%s);",\
             (file_locid,datalist[0],datalist[1],datalist[2]))
-        dbconn.commit()
+      dbconn.commit()
         
   precip_files = glob.glob(config.GROUNDDATAPATH + "PCP_*.dbf")
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
@@ -130,13 +132,15 @@ def insert_ground_data():
     file_locid = cur.fetchone()[0]
 
     dbf_string_lines = parse_ground_dbf(filename)
-    for line in dbf_string_lines:
-	datalist = line.split(",")
-	curs = dbconn.cursor()
-	curs.execute(
+    #for line in dbf_string_lines:
+      #datalist = line.split(",")
+    for j in range(730): # Temporarily limiting to the first year of data because there's so much
+      datalist = dbf_string_lines[j].split(",")
+      curs = dbconn.cursor()
+      curs.execute(
             "INSERT INTO geodata(locid,date,rain) VALUES (%s,%s,%s);",\
             (file_locid,datalist[0],datalist[1]))
-        dbconn.commit()    
+      dbconn.commit()    
           
 
 if __name__ == "__main__":
