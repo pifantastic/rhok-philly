@@ -38,7 +38,7 @@ def get_month_tempmax_averages(month):
   return curs.fetchall()
     
 
-def broken_graph_monthly_temp(month_num):
+def graph_monthly_temp(month_num):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
   result_tuples = get_month_tempmax_averages(month_num) 
   lats, longs, temps = zip(*result_tuples)
@@ -69,7 +69,7 @@ def broken_graph_monthly_temp(month_num):
   plt.title('griddata test')
   plt.show()
   
-def graph_monthly_temp(month_num):
+def deprecated_graph_monthly_temp(month_num):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
   result_tuples = get_month_tempmax_averages(month_num) 
   lats, longs, temps = zip(*result_tuples)
@@ -93,4 +93,4 @@ def graph_monthly_temp(month_num):
 
   plt.show()
 
-broken_graph_monthly_temp(4)
+graph_monthly_temp(4)
