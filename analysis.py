@@ -56,7 +56,7 @@ def broken_graph_monthly_temp(month_num):
 
 
   # grid the data.
-  zi = griddata((f_longs,f_lats),f_temps,(xi,yi),interp='linear')
+  zi = griddata((f_longs,f_lats),f_temps,(xi[None,:],yi[:,None]),method='linear')
   # contour the gridded data, plotting dots at the nonuniform data points.
   CS = plt.contour(xi,yi,zi,15,linewidths=0.5,colors='k')
   CS = plt.contourf(xi,yi,zi,15,cmap=plt.cm.jet)
