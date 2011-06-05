@@ -13,7 +13,7 @@ PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBU
 def get_data_by_date(querydate):
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
-  curs.execute("SELECT (locid,tempmax) FROM geodata WHERE date = %s AND locid IN (SELECT locid FROM location WHERE sourceid='ground') ORDER BY locid;", (querydate,))
+  curs.execute("SELECT lat,lng,myquery.locid,monthtime,avgtmpmax FROM (SELECT locid,EXTRACT(month FROM geodata.date) AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata WHERE locid IN (SELECT locid FROM location WHERE sourceid='ground') GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) AS myquery JOIN location ON location.locid=myquery.locid;", (querydate,))
   curs.fetchall()
   print curs
   
