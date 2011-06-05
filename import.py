@@ -108,18 +108,22 @@ def insert_ground_data():
     # can match the station id numbers specified in the ground location csv.
     cur = dbconn.cursor()
     cur.execute("SELECT locid FROM location WHERE stationid = %s;", (str(source_num),))
-    file_locid = cur.fetchone()[0]
+    result = cur.fetchone()
+    if result=None:
+      print "No station location with station id", source_num
+    else:
+      file_locid = result[0]
 
-    dbf_string_lines = parse_ground_dbf(filename)
-    #for line in dbf_string_lines:
-      #datalist = line.split(",")
-    for j in range(730): # Temporarily limiting to the first year of data because there's so much
-      datalist = dbf_string_lines[j].split(",")
-      curs = dbconn.cursor()
-      curs.execute(
+      dbf_string_lines = parse_ground_dbf(filename)
+      #for line in dbf_string_lines:
+	#datalist = line.split(",")
+      for j in range(730): # Temporarily limiting to the first year of data because there's so much
+	datalist = dbf_string_lines[j].split(",")
+	curs = dbconn.cursor()
+	curs.execute(
             "INSERT INTO geodata(locid,date,tempmax,tempmin) VALUES (%s,%s,%s,%s);",\
             (file_locid,datalist[0],datalist[1],datalist[2]))
-      dbconn.commit()
+	dbconn.commit()
         
   precip_files = glob.glob(config.GROUNDDATAPATH + "PCP_*.dbf")
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
@@ -131,18 +135,22 @@ def insert_ground_data():
     # can match the station id numbers specified in the ground location csv.
     cur = dbconn.cursor()
     cur.execute("SELECT locid FROM location WHERE stationid = %s;", (str(source_num),))
-    file_locid = cur.fetchone()[0]
+    result = cur.fetchone()
+    if result=None:
+      print "No station location with station id", source_num
+    else:
+      file_locid = result[0]
 
-    dbf_string_lines = parse_ground_dbf(filename)
-    #for line in dbf_string_lines:
-      #datalist = line.split(",")
-    for j in range(730): # Temporarily limiting to the first year of data because there's so much
-      datalist = dbf_string_lines[j].split(",")
-      curs = dbconn.cursor()
-      curs.execute(
+      dbf_string_lines = parse_ground_dbf(filename)
+      #for line in dbf_string_lines:
+	#datalist = line.split(",")
+      for j in range(730): # Temporarily limiting to the first year of data because there's so much
+	datalist = dbf_string_lines[j].split(",")
+	curs = dbconn.cursor()
+	curs.execute(
             "INSERT INTO geodata(locid,date,rain) VALUES (%s,%s,%s);",\
             (file_locid,datalist[0],datalist[1]))
-      dbconn.commit()    
+	dbconn.commit()    
           
 
 if __name__ == "__main__":
