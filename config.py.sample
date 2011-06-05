@@ -3,3 +3,8 @@
 DBNAME = 'db'
 DBUSER = 'user'
 DBPASS = 'pass'
+
+# Path to data directories - Relative paths are ok if you always invoke 
+# from the same directory.
+
+GROUNDDATAPATH = '/home/myaccount/rhok2011/data/'
