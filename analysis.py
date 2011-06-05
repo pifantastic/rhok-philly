@@ -4,7 +4,8 @@ Goal: Generate contoured maps of the data plotted by geographical location.
 """
 
 import config, psycopg2
-from matplotlib.mlab import griddata
+#from matplotlib.mlab import griddata
+from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -37,7 +38,7 @@ def get_month_tempmax_averages(month):
   return curs.fetchall()
     
 
-def graph_monthly_temp(month_num):
+def broken_graph_monthly_temp(month_num):
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
   result_tuples = get_month_tempmax_averages(month_num) 
   lats, longs, temps = zip(*result_tuples)
@@ -55,7 +56,7 @@ def graph_monthly_temp(month_num):
 
 
   # grid the data.
-  zi = griddata(f_longs,f_lats,f_temps,xi,yi,interp='linear')
+  zi = griddata((f_longs,f_lats),f_temps,(xi,yi),interp='linear')
   # contour the gridded data, plotting dots at the nonuniform data points.
   CS = plt.contour(xi,yi,zi,15,linewidths=0.5,colors='k')
   CS = plt.contourf(xi,yi,zi,15,cmap=plt.cm.jet)
@@ -63,9 +64,33 @@ def graph_monthly_temp(month_num):
   
   # plot data points.
   plt.scatter(f_longs,f_lats,marker='o',c='b',s=len(f_lats))
-  plt.xlim(-22,-10)
-  plt.ylim(-70,-57)
+  #plt.xlim(-22,-10)
+  #plt.ylim(-70,-57)
   plt.title('griddata test')
   plt.show()
+  
+def graph_monthly_temp(month_num):
+  # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
+  result_tuples = get_month_tempmax_averages(month_num) 
+  lats, longs, temps = zip(*result_tuples)
+  
+  f_lats = [float(item) for item in lats]
+  f_longs = [float(item) for item in longs]
+  f_temps = [float(item) for item in temps]
+  print f_temps
+  
+  # plot data points.
+  plt.scatter(f_longs,f_lats,marker='o')
+  plt.title('griddata test')
+  plt.figure()
+  
+  from mpl_toolkits.mplot3d import axes3d, Axes3D
 
-graph_monthly_temp(4)
+  fig = plt.figure()
+  ax = Axes3D(fig)
+  cset = ax.contour(f_longs, f_lats, f_temps, 16, extend3d=True)
+  ax.clabel(cset, fontsize=9, inline=1)
+
+  plt.show()
+
+broken_graph_monthly_temp(4)
