@@ -22,6 +22,20 @@ def get_monthly_tempmax_averages():
     "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
     "AS myquery JOIN location ON location.locid=myquery.locid;")
   return curs.fetchall()
+
+def get_month_tempmax_averages(month):
+  dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  curs = dbconn.cursor()
+  # Get average maximum temperature (from 2 years of data) for every month. 
+  # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
+  curs.execute("SELECT lat,lng,myquery.locid,monthtime,avgtmpmax FROM "+\
+    "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
+    "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
+    "WHERE locid IN (SELECT locid FROM location WHERE sourceid='ground') "+\
+    "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
+    "AS myquery JOIN location ON location.locid=myquery.locid; AND monthtime=%s", (month,))
+  return curs.fetchall()
+ 
  
 
 def graph_monthly_temp(tuple_list):
