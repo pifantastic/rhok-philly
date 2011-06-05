@@ -15,7 +15,7 @@ Import satellite data: `python import.py -s`
    [ ] Change source of ground data to use ftp source
    [ ] Create functions to update database with new weather data and automate checking ftp / online sources
    [ ] When graphing, handle -99 values from data sources that were not available in certain years.  
-	 >> Current solution requires deleting those values from the database. 
+	 >> Current solution requires deleting those values from the database. See CLEANUP for explanation.
          >> Proposed solution: a "cleanResults" function to remove stations & data from the query results
    [ ] Create an online CGI interface for specifying data to display.
    [ ] Overlay .png graphs on map image.  
