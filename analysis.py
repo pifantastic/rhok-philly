@@ -67,7 +67,7 @@ def graph_monthly_temp(result_tuples,qtype):
   plt.colorbar() # draw colorbar
   
   # plot data points.
-  plt.scatter(f_longs,f_lats,marker='o',c='b',s=len(f_lats))
+  plt.scatter(f_longs,f_lats,marker='+',c='b',s=len(f_lats))
   #plt.xlim(-22,-10)
   #plt.ylim(-70,-57)
   plt.title('Maximum Temperatures For Month')
@@ -76,30 +76,6 @@ def graph_monthly_temp(result_tuples,qtype):
   plt.ylabel("Latitude")
   plt.figure()
   
-def deprecated_graph_monthly_temp(month_num):
-  # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
-  result_tuples = get_month_tempmax_averages(month_num,'ground') 
-  lats, longs, temps = zip(*result_tuples)
-  
-  f_lats = [float(item) for item in lats]
-  f_longs = [float(item) for item in longs]
-  f_temps = [float(item) for item in temps]
-  print f_temps
-  
-  # plot data points.
-  plt.scatter(f_longs,f_lats,marker='o')
-  plt.title('griddata test')
-  plt.figure()
-  
-  from mpl_toolkits.mplot3d import axes3d, Axes3D
-
-  fig = plt.figure()
-  ax = Axes3D(fig)
-  cset = ax.contour(f_longs, f_lats, f_temps, 16, extend3d=True)
-  ax.clabel(cset, fontsize=9, inline=1)
-
-  plt.show()
-
 month = 10
 result = get_month_tempmax_averages(month,'ground') 
 graph_monthly_temp(result,'ground')
