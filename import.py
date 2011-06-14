@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# For now, this hardcodes the sat data in fetch_nasa_data(). We should
+# parameterise this.
 
 """
 Data Importer v%(VERSION)s
@@ -23,7 +25,7 @@ IMPORT_SAT = False
 IMPORT_GROUND = False
 CREATE_DB = False
 PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBUSER, config.DBPASS)
-
+DAYS_IMPORT = 365 * 2 # Temporarily limiting to the first two years of data because there's so much
 
 # conn = psycopg2.connect(PGSQL_CONN_STRING)
 
@@ -49,7 +51,9 @@ def fetch_nasa_data(lat=10, lng=10):
     'ye': 1990,
     'submit': 'Yes'
   }
-
+# Is a bulk-fetch the best way to do this?
+# Also: This should be modified so if there already is data, it will not try to import it again.
+#	That same code probably will handle incremental imports.
   request = urllib2.Request(NASA_URL, urllib.urlencode(params))
   response = urllib2.urlopen(request)
   lines = response.read().strip().split("\n")
@@ -120,7 +124,7 @@ def insert_ground_data():
       dbf_string_lines = parse_ground_dbf(filename)
       #for line in dbf_string_lines:
 	#datalist = line.split(",")
-      for j in range(730): # Temporarily limiting to the first year of data because there's so much
+      for j in range(730): # Temporarily limiting to the first two years of data because there's so much
 	datalist = dbf_string_lines[j].split(",")
 	curs = dbconn.cursor()
 	curs.execute(
@@ -147,8 +151,8 @@ def insert_ground_data():
       dbf_string_lines = parse_ground_dbf(filename)
       #for line in dbf_string_lines:
 	#datalist = line.split(",")
-      for j in range(730): # Temporarily limiting to the first year of data because there's so much
-	datalist = dbf_string_lines[j].split(",")
+      for j in range(DAYS_IMPORT): 
+	datalist = dbf_string_lines[j].split(",") # We should gracefully handle if the dbf is malformed
 	curs = dbconn.cursor()
 	curs.execute(
             "INSERT INTO geodata(locid,date,rain) VALUES (%s,%s,%s);",\
