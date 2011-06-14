@@ -71,14 +71,14 @@ def graph_monthly_temp(result_tuples,qtype):
   #plt.xlim(-22,-10)
   #plt.ylim(-70,-57)
   plt.title('Maximum Temperatures For Month')
-  plt.savefig(qtype+'_temperature.png',dpi=150)
   plt.xlabel("Longitude")
   plt.ylabel("Latitude")
-  plt.figure()
+  plt.savefig(qtype+'_temperature.png',dpi=150)
   
 month = 10
 result = get_month_tempmax_averages(month,'ground') 
 graph_monthly_temp(result,'ground')
+plt.figure()
 sat_result = get_month_tempmax_averages(month,'sat') 
 graph_monthly_temp(sat_result,'sat')
 plt.show()
