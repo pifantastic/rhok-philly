@@ -3,13 +3,16 @@ Analysis of weather data from satellite and ground sources.
 Goal: Generate contoured maps of the data plotted by geographical location.
 """
 
-import config, psycopg2
-#from matplotlib.mlab import griddata
+import config, psycopg2, sys
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 import numpy as np
 
 PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBUSER, config.DBPASS)
+
+def usage(exit_code=0): 
+  print __doc__ % globals()
+  sys.exit(exit_code)
 
 def get_monthly_tempmax_averages():
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
@@ -74,11 +77,33 @@ def graph_monthly_temp(result_tuples,qtype):
   plt.xlabel("Longitude")
   plt.ylabel("Latitude")
   plt.savefig(qtype+'_temperature.png',dpi=150)
+
+if __name__ == "__main__":
   
-month = 10
-result = get_month_tempmax_averages(month,'ground') 
-graph_monthly_temp(result,'ground')
-plt.figure()
-sat_result = get_month_tempmax_averages(month,'sat') 
-graph_monthly_temp(sat_result,'sat')
-plt.show()
+  source = ""
+  
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "m")
+  except getopt.GetoptError, err:
+    print str(err)
+    usage(1)
+
+  for o, a in opts:
+    if o == "-m": 
+      if 1 <= int(a) <= 12:
+	month = int(a)
+      else:
+	assert False, "Not a valid month number."
+    elif o == "-s": 
+      if a in ["sat", "ground"]:  # Only allowing very strictly correct input for now.
+	source = a
+      else: assert False, "Not a valid source option. Acceptable input: sat or ground"
+    else: assert False, "unhandled option"
+  
+  if source = "": assert False, "Need to specify a source!"
+  else:
+    result = get_month_tempmax_averages(month,source) 
+    graph_monthly_temp(result,source)
+    plt.show()
+
+  
