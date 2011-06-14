@@ -81,6 +81,7 @@ def graph_monthly_temp(result_tuples,qtype):
 if __name__ == "__main__":
   
   source = ""
+  month = -1
   
   try:
     opts, args = getopt.getopt(sys.argv[1:], "m")
@@ -101,6 +102,7 @@ if __name__ == "__main__":
     else: assert False, "unhandled option"
   
   if source = "": assert False, "Need to specify a source!"
+  elif month < 0: assert False, "Need to specify a month!"
   else:
     result = get_month_tempmax_averages(month,source) 
     graph_monthly_temp(result,source)
