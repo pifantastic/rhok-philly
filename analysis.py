@@ -101,7 +101,7 @@ if __name__ == "__main__":
       else: assert False, "Not a valid source option. Acceptable input: sat or ground"
     else: assert False, "unhandled option"
   
-  if source = "": assert False, "Need to specify a source!"
+  if source == "": assert False, "Need to specify a source!"
   elif month < 0: assert False, "Need to specify a month!"
   else:
     result = get_month_tempmax_averages(month,source) 
