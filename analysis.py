@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 """
 Analysis of weather data from satellite and ground sources.
 Goal: Generate contoured maps of the data plotted by geographical location.
@@ -84,13 +86,13 @@ if __name__ == "__main__":
   month = -1
   
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "m")
+    opts, args = getopt.getopt(sys.argv[1:], "m:s:")
   except getopt.GetoptError, err:
     print str(err)
     usage(1)
 
   for o, a in opts:
-    if o == "-m": 
+    if o == "-m":
       if 1 <= int(a) <= 12:
 	month = int(a)
       else:
