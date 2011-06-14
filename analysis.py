@@ -3,7 +3,7 @@ Analysis of weather data from satellite and ground sources.
 Goal: Generate contoured maps of the data plotted by geographical location.
 """
 
-import config, psycopg2, sys
+import config, psycopg2, sys, getopt
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 import numpy as np
