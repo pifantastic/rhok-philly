@@ -5,7 +5,7 @@ Analysis of weather data from satellite and ground sources.
 Goal: Generate contoured maps of the data plotted by geographical location.
 """
 
-import config, psycopg2, sys, getopt
+import config, psycopg2, sys, getopt, geodb
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,37 +16,77 @@ def usage(exit_code=0):
   print __doc__ % globals()
   sys.exit(exit_code)
 
-def get_monthly_tempmax_averages():
+def get_monthly_field_averages(fieldname):
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
-  # Get average maximum temperature (from 2 years of data) for every month. 
-  # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
-  curs.execute("SELECT lat,lng,myquery.locid,monthtime,avgtmpmax FROM "+\
-    "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
-    "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
-    "WHERE locid IN (SELECT locid FROM location WHERE sourceid='ground') "+\
-    "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
-    "AS myquery JOIN location ON location.locid=myquery.locid;")
-  return curs.fetchall()
+  # Get average named field value (from 2 years of data) for every month. 
+  # Tuples will be lat, long, location id, month number, and average for that field
+  fieldid = get_fieldid_for_field(fieldname)
 
-def get_month_tempmax_averages(month,qtype):
+  curs.execute("SELECT lat,lng,myquery.locid,monthtime,avggeoval FROM " +\
+    "(SELECT locid,EXTRACT(month FROM geotimespace.date) "+\
+    "AS monthtime,AVG(geoval) AS avggeoval FROM geotimespace "+\
+    "JOIN geovalue ON geovalue.geotsid = geotimespace.geotsid "+\
+    "WHERE geofieldid=%s AND locid IN "+\
+    "(SELECT locid FROM location WHERE sourceid = 'ground') "+\
+    "GROUP BY EXTRACT(month FROM geotimespace.date),locid ORDER BY locid,monthtime) "+\
+    "AS myquery JOIN location ON location.locid=myquery.locid;", (fieldid,))
+
+def get_month_field_averages(month,qtype,fieldname):
   """
   Inputs:
   month = numeric (1-12), what month you want
   qtype = 'sat' or 'ground'
+  fieldname
 
   """
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
+  fieldid = get_fieldid_for_field(fieldname)
+  # Get average named field value(from 2 years of data) for given month. 
+  # Tuples will be lat, long, location id, month number, and average value for that field
+  curs.execute("SELECT lat,lng,avgggeoval FROM "+\
+    "(SELECT locid,EXTRACT(month FROM geotimespace.date) "+\
+    "AS monthtime,AVG(geoval) AS avggeoval FROM geotimespace "+\
+    "JOIN geovalue ON geovalue.geotsid = geotimespace.geotsid "+\
+    "WHERE geofieldid=%s AND locid IN (SELECT locid FROM location WHERE sourceid=%s) "+\
+    "GROUP BY EXTRACT(month FROM geotimespace.date),locid ORDER BY locid,monthtime) "+\
+    "AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=%s", (fieldid,qtype,month))
+  return curs.fetchall()
+
+def get_monthly_tempmax_averages():
+  return get_monthly_field_averages("tempmax")
+  #dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  #curs = dbconn.cursor()
+  # Get average maximum temperature (from 2 years of data) for every month. 
+  # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
+  #curs.execute("SELECT lat,lng,myquery.locid,monthtime,avgtmpmax FROM "+\
+  #  "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
+  #  "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
+  #  "WHERE locid IN (SELECT locid FROM location WHERE sourceid='ground') "+\
+  #  "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
+  #  "AS myquery JOIN location ON location.locid=myquery.locid;")
+  #return curs.fetchall()
+
+def get_month_tempmax_averages(month,qtype):
+  return get_month_field_averages(month,qtype,"tempmax")
+  #"""
+  #Inputs:
+  #month = numeric (1-12), what month you want
+  #qtype = 'sat' or 'ground'
+
+  #"""
+  #dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  #curs = dbconn.cursor()
   # Get average maximum temperature (from 2 years of data) for given month. 
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
-  curs.execute("SELECT lat,lng,avgtmpmax FROM "+\
-    "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
-    "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
-    "WHERE locid IN (SELECT locid FROM location WHERE sourceid=%s) "+\
-    "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
-    "AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=%s", (qtype,month))
-  return curs.fetchall()
+  #curs.execute("SELECT lat,lng,avgtmpmax FROM "+\
+  #  "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
+  #  "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
+  #  "WHERE locid IN (SELECT locid FROM location WHERE sourceid=%s) "+\
+  #  "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
+  #  "AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=%s", (qtype,month))
+  #return curs.fetchall()
     
 
 def graph_monthly_temp(result_tuples,qtype):
