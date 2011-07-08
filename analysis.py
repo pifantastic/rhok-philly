@@ -16,6 +16,26 @@ def usage(exit_code=0):
   print __doc__ % globals()
   sys.exit(exit_code)
 
+def get_daily_field_values(day,month,year,fieldname):
+  ''' Get data for a specified field for a specific day. 
+      Returned tuples will be lat, long, location id, month number, 
+      and value for that field.'''
+
+  dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  curs = dbconn.cursor()
+
+  fieldid = get_fieldid_for_field(fieldname)
+
+  curs.execute("SELECT lat,lng,myquery.locid,monthtime,avggeoval FROM " +\
+    "(SELECT locid,EXTRACT(month FROM geotimespace.date) "+\
+    "AS monthtime,AVG(geoval) AS avggeoval FROM geotimespace "+\
+    "JOIN geovalue ON geovalue.geotsid = geotimespace.geotsid "+\
+    "WHERE geofieldid=%s AND locid IN "+\
+    "(SELECT locid FROM location WHERE sourceid = 'ground') "+\
+    "GROUP BY EXTRACT(month FROM geotimespace.date),locid ORDER BY locid,monthtime) "+\
+    "AS myquery JOIN location ON location.locid=myquery.locid;", (fieldid,))
+  return curs.fetchall()
+
 def get_monthly_field_averages(fieldname):
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
@@ -31,15 +51,16 @@ def get_monthly_field_averages(fieldname):
     "(SELECT locid FROM location WHERE sourceid = 'ground') "+\
     "GROUP BY EXTRACT(month FROM geotimespace.date),locid ORDER BY locid,monthtime) "+\
     "AS myquery JOIN location ON location.locid=myquery.locid;", (fieldid,))
+  return curs.fetchall()
 
 def get_month_field_averages(month,qtype,fieldname):
   """
   Inputs:
-  month = numeric (1-12), what month you want
-  qtype = 'sat' or 'ground'
-  fieldname
-
+      month = numeric (1-12), what month you want
+      qtype = 'sat' or 'ground'
+      fieldname
   """
+
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
   fieldid = get_fieldid_for_field(fieldname)
