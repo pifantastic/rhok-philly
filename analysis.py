@@ -24,7 +24,7 @@ def get_daily_field_values(day,month,year,fieldname):
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
 
-  fieldid = get_fieldid_for_field(fieldname)
+  fieldid = geodb.get_fieldid_for_field(fieldname)
   datefield = psycopg2.Date(year,month,day)
   curs.execute("SELECT geotimespace.locid,lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s", (datefield,fieldid))
   return curs.fetchall()
@@ -34,7 +34,7 @@ def get_monthly_field_averages(fieldname):
   curs = dbconn.cursor()
   # Get average named field value (from 2 years of data) for every month. 
   # Tuples will be lat, long, location id, month number, and average for that field
-  fieldid = get_fieldid_for_field(fieldname)
+  fieldid = geodb.get_fieldid_for_field(fieldname)
 
   curs.execute("SELECT lat,lng,myquery.locid,monthtime,avggeoval FROM " +\
     "(SELECT locid,EXTRACT(month FROM geotimespace.date) "+\
@@ -56,10 +56,10 @@ def get_month_field_averages(month,qtype,fieldname):
 
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
-  fieldid = get_fieldid_for_field(fieldname)
+  fieldid = geodb.get_fieldid_for_field(fieldname)
   # Get average named field value(from 2 years of data) for given month. 
   # Tuples will be lat, long, location id, month number, and average value for that field
-  curs.execute("SELECT lat,lng,avgggeoval FROM "+\
+  curs.execute("SELECT lat,lng,avggeoval FROM "+\
     "(SELECT locid,EXTRACT(month FROM geotimespace.date) "+\
     "AS monthtime,AVG(geoval) AS avggeoval FROM geotimespace "+\
     "JOIN geovalue ON geovalue.geotsid = geotimespace.geotsid "+\
