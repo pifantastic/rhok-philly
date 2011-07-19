@@ -74,8 +74,20 @@ def source_retrieve(source):
 def get_ftplist(site, path, user=None, pass=None):
 
 def get_ftpfile(site, filename, user=None, pass=None):
+	# Seems urllib2 can do this too!
+	# But.... we may want to use a proper FTP module so we can get FTP dirlistings.
+	try:
+		datahandle = urllib2.urlopen(url)
+		return (1, datahandle.read() )
+	except URLError:
+		return (0, None)
 
 def get_httpfile(url):
+	try:
+		datahandle = urllib2.urlopen(url)
+		return (1, datahandle.read() )
+	except URLError:
+		return (0, None)
 
 #################################################
 # Local cache management functions
