@@ -1,7 +1,8 @@
 #!/usr/bin/python
 #
-# Invoked from cron, reads config file, retrieves new data from various source,
-# drops it into a file, invokes importbackend.py appropriately.
+# Invoked from cron, reads config file, retrieves new data from various sources.
+# Saves files if they are files. Drops HTTP or POP3 data into files, otherwise.
+# Invokes importbackend.py appropriately.
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
 
