@@ -7,6 +7,8 @@ Goal: Generate contoured maps of the data plotted by geographical location.
 
 import config, psycopg2, sys, getopt, geodb
 from scipy.interpolate import griddata
+import matplotlib 
+matplotlib.use('Agg')  # This & second matplotlib import enable backend for SVG support
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -110,7 +112,7 @@ def graph_monthly_temp(result_tuples,qtype):
   f_lats = [float(item) for item in lats]
   f_longs = [float(item) for item in longs]
   f_temps = [float(item) for item in temps]
-  print f_temps
+  #print f_temps
   
   # define grid.
   yi = np.linspace(-22.0,-10.0,100) # Based on range of latitudes for the country data
@@ -132,7 +134,7 @@ def graph_monthly_temp(result_tuples,qtype):
   plt.title('Maximum Temperatures For Month')
   plt.xlabel("Longitude")
   plt.ylabel("Latitude")
-  plt.savefig(qtype+'_temperature.png',dpi=150)
+  plt.savefig(qtype+'_temperature.svg',dpi=150)
 
 if __name__ == "__main__":
   
@@ -162,6 +164,6 @@ if __name__ == "__main__":
   else:
     result = get_month_tempmax_averages(month,source) 
     graph_monthly_temp(result,source)
-    plt.show()
+    #plt.show()
 
   
