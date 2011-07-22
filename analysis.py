@@ -105,8 +105,8 @@ def get_month_tempmax_averages(month,qtype):
   #return curs.fetchall()
     
 
-def graph_monthly_temp(result_tuples,qtype):
-  # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
+def graph_monthly_temp(result_tuples,filename):
+  """ Tuples will be lat, long, location id, month number, and average (maximum) temperature. We need the filename to save the figure in. """
   lats, longs, temps = zip(*result_tuples)
   
   f_lats = [float(item) for item in lats]
@@ -131,10 +131,10 @@ def graph_monthly_temp(result_tuples,qtype):
   plt.scatter(f_longs,f_lats,marker='+',c='b',s=len(f_lats))
   #plt.xlim(-22,-10)
   #plt.ylim(-70,-57)
-  plt.title('Maximum Temperatures For Month')
+  #plt.title('Maximum Temperatures For Month')
   plt.xlabel("Longitude")
   plt.ylabel("Latitude")
-  plt.savefig(qtype+'_temperature.svg',dpi=150)
+  plt.savefig(filename+'.svg',dpi=150)
 
 if __name__ == "__main__":
   
@@ -163,7 +163,7 @@ if __name__ == "__main__":
   elif month < 0: assert False, "Need to specify a month!"
   else:
     result = get_month_tempmax_averages(month,source) 
-    graph_monthly_temp(result,source)
+    graph_monthly_temp(result,source+"_output")
     #plt.show()
 
   
