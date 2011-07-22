@@ -20,15 +20,15 @@ def usage(exit_code=0):
 
 def get_daily_field_values(day,month,year,fieldname):
   ''' Get data for a specified field for a specific day. 
-      Returned tuples will be lat, long, location id, 
-      and value for that field.'''
+      Returned tuples will be lat, long, and value for that field.'''
 
   dbconn = psycopg2.connect(PGSQL_CONN_STRING)
   curs = dbconn.cursor()
 
   fieldid = geodb.get_fieldid_for_field(fieldname)
   datefield = psycopg2.Date(year,month,day)
-  curs.execute("SELECT geotimespace.locid,lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s", (datefield,fieldid))
+  curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s", (datefield,fieldid)) 
+  # Could return geotimespace.locid if need be, but not right now.
   return curs.fetchall()
 
 def get_monthly_field_averages(fieldname):
@@ -105,8 +105,9 @@ def get_month_tempmax_averages(month,qtype):
   #return curs.fetchall()
     
 
-def graph_monthly_temp(result_tuples,filename):
-  """ Tuples will be lat, long, location id, month number, and average (maximum) temperature. We need the filename to save the figure in. """
+def graph_result(result_tuples,filename):
+  """ Tuples will be lat, long, and the desired data. 
+  We need the filename to save the figure in. """
   lats, longs, temps = zip(*result_tuples)
   
   f_lats = [float(item) for item in lats]
