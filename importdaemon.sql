@@ -19,7 +19,6 @@ CREATE TABLE datafile (
 CREATE FUNCTION source_is_current(INTEGER) RETURNS BOOLEAN AS '
 	DECLARE
 		sid ALIAS FOR $1;
-		returner BOOLEAN;
 		last TIMESTAMP;
 		intv INTERVAL;
 	BEGIN
