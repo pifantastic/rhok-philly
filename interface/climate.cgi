@@ -9,24 +9,24 @@ import htmlGen as h
 cgitb.enable()  # Enabling traceback to display in the browser.
 #cgitb.enable(display=0, logdir="/tmp")   # Use this for more privacy.
 
-monthDict = dict({1:"January",
-		 2:"February",
-		 3:"March",
-		 4:"April",
-		 5:"May",
-		 6:"June",
-		 7:"July",
-		 8:"August",
-		 9:"September",
-		 10:"October",
-		 11:"November",
-		 12:"December"})
+monthDict = dict({"January":1,
+		 "February":2,
+		 "March":3,
+		 "April":4,
+		 "May":5,
+		 "June":6,
+		 "July":7,
+		 "August":8,
+		 "September":9,
+		 "October":10,
+		 "November":11,
+		 "December":12})
 
 datatypeDict = dict({#"solarradiation":"solar radiation",
 		     "tempmax":"maximum temperature",
 		     "tempmin":"minimum temperature",
-		     "tempmedian":"median temperature",
-		     "rain":"rainfall" # Add comma when uncommenting!
+		     #"tempmedian":"median temperature",
+		     "rain":"precipitation" # Add comma when uncommenting!
 		     #"wind":"wind speed",
 		     #"dewpoint":"dew point",
 		     #"humidity":"humidity"
@@ -104,15 +104,31 @@ def insertQueryMenu():
 	print '\n</div> '
 	print 'End of bar'
 
+def makeFilename(myForm):
+	if myForm["submission"].value == "singleday":
+		return myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value
+	elif myForm["submission"].value == "monthavg":
+		return myForm["querytype"].value+"_"+myForm["startyear"].value+"-"myForm["endyear"].value+"-"+myForm["month"].value
+
 #------------------------------------------------------------------------
 # Dealing with content
 #------------------------------------------------------------------------
 
 form = cgi.FieldStorage()
 
-
 insertHeader()
 insertQueryMenu()
+
+if form["submission"].value == "singleday":
+	tuples = get_daily_field_values(form["day"].value,
+			       form["month"].value,
+			       form["year"].value,
+			       form["querytype"].value)
+	graph_result(tuples, makeFilename(form))
+
+
+
+
 
 
 soughtGraph = "images/" + form["month"].value + "_" + form["startyear"].value + ".png"
