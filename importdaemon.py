@@ -75,13 +75,48 @@ def define_source(sourcename, sourcetype, updinterval=None, site=None, path=None
 # Source retrieval functions
 
 def get_filelist(source):
+	sourcetype = get_source_type(source)
+	if(sourcetype == "ftp"):
+		sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
+		files = get_ftplist(site, path, ftplogin, ftppass)
+	else:
+		print "Unsupported protocol %s" % sourcetype
+		exit(1)
+	return files
 
 def get_file(source, filename):
+	'''
+	Retrieve the named file from the given site. The actual remote path is the source's path concatenated with the
+	file path
+
+	'''
+	sourcetype = get_source_type(source)
+	if(sourcetype == "ftp"):
+		sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
+		targfile = build_cache_filename(source, filename)
+		get_ftpfile(targfile, site, path + "/" + filename, ftplogin, ftppass)
+	else:
+		print "Unsupported protocol %s" % sourcetype
+		exit(1)
 
 #################################################
-# Source identity functions
+# Source update functions
 # 	Do we already have this chunk of data?
 
+def handle_source_update(source):
+	sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
+	if(sourcetype == "ftp"):
+		cachedir = get_cache_filedir(source)
+		cachefiles = set(os.listdir(cachedir))
+		remfiles = set(get_filelist(source))
+		to_cache = remfiles - cachefiles # Yay set objects!
+		for thisfile in to_cache:
+			get_file(source, thisfile)
+			db_import_file(source, thisfile)
+	else:
+		print "Unsupported protocol %s" % sourcetype
+		exit(1)
+		
 
 def getNeededSources(source, cachedir):
 # Is this better, or..
@@ -93,10 +128,22 @@ def source_do_ihave(source, filename):
 
 def get_source_info(source):
 # Returns info from define_source
+	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	curs = dbconn.cursor()
+	curs.execute("SELECT sourcename, updinterval, lastupdate, sourcetype, site, path, login, pass FROM datasource WHERE datsourceid=?", (source,))
+	res = curs.fetchone()
+	return res
 
 def source_retrieveall(source):
 # Needed for some sourcetypes, like pop3 and *maybe* file?
 #	For these sources, if there is data, it is imported.
+
+def get_source_type(source):
+	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	curs = dbconn.cursor()
+	curs.execute("SELECT sourcetype FROM datasource WHERE datsourceid=?", (source,))
+	res = curs.fetchone()[0]
+	return res
 
 #################################################
 # Data retrieval functions
@@ -151,9 +198,29 @@ def get_httpfile(url):
 #################################################
 # Local cache management functions
 
+def get_cache_filedir(source):
+''' Where are our cachefiles stored? Use this to sync '''
+	sourcetype = get_source_type(source)
+	if(sourcetype == "ftp"):
+		return GROUNDDATAPATH + source 
+	else:
+		print "Unsupported protocol %s" % sourcetype
+		exit(1)
+
 def build_cache_filename(source, filename):
-# Use a predefined cachedir, sourcename, and sourcetype to attempt to integrate data into a source-specific
-# subdirectory so that:
-#	1) We can identify when we already have a certain file, for protocols (like FTP) where these might stick around
-#	2) Filenames won't overwrite each other for protocols where there are no filenames
+''' Use a predefined cachedir, sourcename, and sourcetype to attempt to integrate data into a source-specific
+	subdirectory so that:
+	1) We can identify when we already have a certain file, for protocols (like FTP) where these might stick around
+	2) Filenames won't overwrite each other for protocols where there are no filenames
+'''
+	sourcetype = get_source_type(source)
+	if(sourcetype == "ftp"):
+		os.mkdir(GROUNDDATAPATH + source)
+		return GROUNDDATAPATH + source + "/" + filename # I know source is numeric. I hope that's fine.
+	elif(sourcetype == "http"):
+		os.mkdir(GROUNDDATAPATH + source)
+		return GROUNDDATAPATH + source + "/" + filename # Ugh. I really don't know how well this will work.
+	else:
+		print "Unsupported protocol %s" % sourcetype
+		exit(1)
 
