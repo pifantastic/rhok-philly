@@ -16,12 +16,24 @@
 #	2) db_import_file(source, thisfile)
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
-import config	# If this fails, move the template to an actual file
+import config,importworker	# If this fails, move the template to an actual file
 from ftplib import FTP
 
 if sys.version < '2.7':
 	print "Requires Python 2.7, you have", sys.version
 	sys.exit(8)
+
+######################################
+
+def main():
+''' Do stuff. Not very descriptive, but you won't get anything better out of me. -- Pat '''
+	print "Importdaemon starting up"
+	stales = get_stale_sources()
+	for sourceid in stales:
+		print "\tHandling source " + sourceid
+		handle_source_update(sourceid)
+	print "Importdaemon done"
+
 
 ######################
 # TODO:
@@ -236,3 +248,4 @@ def build_cache_filename(source, filename):
 		print "Unsupported protocol %s" % sourcetype
 		exit(1)
 
+main()
