@@ -10,7 +10,10 @@
 #		database?
 #	2) Should this be invokable by the CGI or just by cron/manual invoke?
 #	3) Which account will this script run under?
-
+#
+# Still TODO:
+#	1) Write main()
+#	2) db_import_file(source, thisfile)
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
 import config	# If this fails, move the template to an actual file
@@ -53,7 +56,12 @@ def get_stale_sources():
 		if(res):
 			stalesources.append(i)
 	return stalesources
-	
+
+def mark_source_current(source):
+''' Mark a source as having been updated '''
+	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	curs = dbconn.cursor()
+	curs.execute("UPDATE datasource SET lastupdate=now() WHERE datsourceid=%s", (source,))
 
 def define_source(sourcename, sourcetype, updinterval=None, site=None, path=None, login=None, pass=None):
 	''' "source" is a short name of a source
@@ -104,6 +112,9 @@ def get_file(source, filename):
 # 	Do we already have this chunk of data?
 
 def handle_source_update(source):
+'''
+Fetch all stale files from the given source
+'''
 	sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
 	if(sourcetype == "ftp"):
 		cachedir = get_cache_filedir(source)
@@ -113,6 +124,7 @@ def handle_source_update(source):
 		for thisfile in to_cache:
 			get_file(source, thisfile)
 			db_import_file(source, thisfile)
+		mark_source_current(source)
 	else:
 		print "Unsupported protocol %s" % sourcetype
 		exit(1)
