@@ -22,7 +22,7 @@ if sys.version < '2.7':
 ######################################
 
 def main():
-''' Do stuff. Not very descriptive, but you won't get anything better out of me. -- Pat '''
+	''' Do stuff. '''
 	print "Importdaemon starting up"
 	stales = get_stale_sources()
 	for sourceid in stales:
