@@ -11,7 +11,7 @@ from importdaemonlib import *
 
 def main():
 	sourceid = define_source('localtest', 'ftp', '5 minutes', 'localhost', '/pub/rhoktest1', 'anonymous', 'pgunn@dachte.org')
-	print "Source is " + sourceid
+	print "Source is %s" % (sourceid)
 
 
 
