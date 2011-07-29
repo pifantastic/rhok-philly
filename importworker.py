@@ -3,9 +3,10 @@
 #
 # importworker.py - A component that takes a source and a file and
 #	figures out the right way to shove it into the database.
+from string import *
 
 def db_import_file(source, thisfile):
-''' The main entry point into this software component. For a named source,
+	''' The main entry point into this software component. For a named source,
 	parse it and put it into the database. '''
 
 	print "db_import_file: " + thisfile
@@ -13,7 +14,7 @@ def db_import_file(source, thisfile):
 	handle_db_import(extension, thisfile) # Do we really need source? Maybe we don't!
 
 def handle_db_import(extension, thisfile):
-''' Based on file extension, actually call the appropriate import routines '''
+	''' Based on file extension, actually call the appropriate import routines '''
 	if(extension == "csv"):		# csv, with header
 		handle_delimited_input(',', thisfile)
 	elif(extension == "txt"):	# Assume this is csv too
@@ -41,19 +42,19 @@ def die(message, returncode=1):
 # Import handlers
 
 def handle_delimited_input(sep, file):
-'''
-Input handler for delimited input. Takes two arguments, a separator and a filename.
-Assumes the first row has fieldnames.
-If the separator is ' ', split on any whitespace.
-'''
+	'''
+	Input handler for delimited input. Takes two arguments, a separator and a filename.
+	Assumes the first row has fieldnames.
+	If the separator is ' ', split on any whitespace.
+	'''
 
 def handle_dbase_input(file): # This is best-effort
-'''
-Input handler for dbase files.
-'''
+	'''
+	Input handler for dbase files.
+	'''
 
 def handle_excel_input(file): # This is best-effort
-'''
-Input handler for excel files. Will not work with the new "open" "XML" files.
-'''
+	'''
+	Input handler for excel files. Will not work with the new "open" "XML" files.
+	'''
 

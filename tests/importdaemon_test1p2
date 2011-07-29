@@ -1,0 +1,17 @@
+#!/usr/bin/python
+# Quick and dirty "null test". Ask importdaemon to sync some files over from
+# my dev box. I have a FTP server there that allows anonymous FTP and has
+# a subdir pub/rhoktest1 containing sync{1..4}.mark
+# Let's see if the sync code can manage it.
+#
+# Part 2: Retrieve a stored sourceid!
+
+import sys
+sys.path.append('..')
+from geodb import *
+from importdaemonlib import *
+
+def main():
+	sourceid = get_source_with_name('importdaemon_test1')
+	print "Found sourceid %s" % (sourceid)
+main()

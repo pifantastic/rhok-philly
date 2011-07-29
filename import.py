@@ -15,7 +15,8 @@ Synopsis: import.py
 	Requires Python 2.7
 """
 
-import os, sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config, glob, subprocess, geodb
+import os, sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config, glob, subprocess
+from geodb import *
 if sys.version < '2.7':
   print "Requires Python 2.7! You have ", sys.version
   sys.exit(8)
@@ -58,14 +59,14 @@ def fetch_nasa_data(lat=10, lng=10):
   cur = conn.cursor()
 
   locid = sat_getlocid(lat,lng)
-  solarradiation_fieldid 	= geodb.get_fieldid_for_field("solarradiation")
-  tempmax_fieldid 		= geodb.get_fieldid_for_field("tempmax")
-  tempmin_fieldid		= geodb.get_fieldid_for_field("tempmin")
-  tempmedian_fieldid		= geodb.get_fieldid_for_field("tempmedian")
-  rain_fieldid			= geodb.get_fieldid_for_field("rain")
-  wind_fieldid			= geodb.get_fieldid_for_field("wind")
-  dewpoint_fieldid		= geodb.get_fieldid_for_field("dewpoint")
-  humidity_fieldid		= geodb.get_fieldid_for_field("humidity")
+  solarradiation_fieldid 	= get_fieldid_for_field("solarradiation")
+  tempmax_fieldid 		= get_fieldid_for_field("tempmax")
+  tempmin_fieldid		= get_fieldid_for_field("tempmin")
+  tempmedian_fieldid		= get_fieldid_for_field("tempmedian")
+  rain_fieldid			= get_fieldid_for_field("rain")
+  wind_fieldid			= get_fieldid_for_field("wind")
+  dewpoint_fieldid		= get_fieldid_for_field("dewpoint")
+  humidity_fieldid		= get_fieldid_for_field("humidity")
 
   for data in lines[6:]:
     data = data.split(None)
@@ -116,8 +117,8 @@ def insert_ground_data():
   temperature_files.sort()
   dbconn = psycopg2.connect(get_dbconn_string())
 
-  tempmax_fieldid = geodb.get_fieldid_for_field("tempmax")
-  tempmin_fieldid = geodb.get_fieldid_for_field("tempmin")
+  tempmax_fieldid = get_fieldid_for_field("tempmax")
+  tempmin_fieldid = get_fieldid_for_field("tempmin")
 
   for filename in temperature_files:
     print filename, "-->" 
@@ -152,7 +153,7 @@ def insert_ground_data():
   precip_files.sort()
   dbconn = psycopg2.connect(get_dbconn_string())
 
-  rain_fieldid= geodb.get_fieldid_for_field("rain")
+  rain_fieldid= get_fieldid_for_field("rain")
 
   for filename in precip_files:
     print filename, "-->"
