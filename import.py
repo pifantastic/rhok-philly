@@ -24,10 +24,7 @@ VERSION = '0.1'
 IMPORT_SAT = False
 IMPORT_GROUND = False
 CREATE_DB = False
-PGSQL_CONN_STRING = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBUSER, config.DBPASS)
 DAYS_IMPORT = 365 * 2 # Temporarily limiting to the first two years of data because there's so much
-
-# conn = psycopg2.connect(PGSQL_CONN_STRING)
 
 def usage(exit_code=0): 
   print __doc__ % globals()
@@ -98,7 +95,7 @@ def insert_ground_loc_csv(csv_path):
 
   station_ids, station_names, lats, longs = zip(*data)
 
-  dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  dbconn = psycopg2.connect(get_dbconn_string())
   curs = dbconn.cursor()
 
   for i in range(len(station_ids)):
@@ -117,7 +114,7 @@ def parse_ground_dbf(dbf_path):
 def insert_ground_data():
   temperature_files = glob.glob(config.GROUNDDATAPATH + "TMP_*.dbf")
   temperature_files.sort()
-  dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  dbconn = psycopg2.connect(get_dbconn_string())
 
   tempmax_fieldid = geodb.get_fieldid_for_field("tempmax")
   tempmin_fieldid = geodb.get_fieldid_for_field("tempmin")
@@ -153,7 +150,7 @@ def insert_ground_data():
         
   precip_files = glob.glob(config.GROUNDDATAPATH + "PCP_*.dbf")
   precip_files.sort()
-  dbconn = psycopg2.connect(PGSQL_CONN_STRING)
+  dbconn = psycopg2.connect(get_dbconn_string())
 
   rain_fieldid= geodb.get_fieldid_for_field("rain")
 
@@ -271,7 +268,7 @@ if __name__ == "__main__":
   if CREATE_DB:
     os.system("createdb %s" % (config.DBNAME))
     os.system("psql -d %s -f %s" % (config.DBNAME, 'schema.sql')) # Must be in the current dir :(
-  conn = psycopg2.connect(PGSQL_CONN_STRING)
+  conn = psycopg2.connect(get_dbconn_string())
 
   if IMPORT_SAT:
     reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',')

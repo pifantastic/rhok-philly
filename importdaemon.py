@@ -12,6 +12,7 @@
 #	3) Which account will this script run under?
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
+import psycopg2
 import config,importworker	# If this fails, move the template to an actual file
 from ftplib import FTP
 
@@ -41,7 +42,7 @@ def main():
 def get_source_list():
 	''' Returns datsourceid for each defined datasource
 	'''
-	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
 	curs.execute("SELECT datsourceid FROM datasource;")
 	return curs.fetchall()
@@ -51,40 +52,39 @@ def get_stale_sources():
 	We define this as:
 	LAST_RETRIEVED + UPDATE_INTERVAL < NOW
 
-	When we successfully check a source, and if it either:
-	A) Does not have new data for us, or
-	B) We integrate any new data
-	We update LAST_RETRIEVED to NOW (CACHE that!) '''
-	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	LAST_RETRIEVED is updated if we're either current or
+	just got some new data.
+	'''
+	dbconn = psycopg2.connect(get_dbconn_string())
 	stalesources = []
-	for i in get_source_list():
+	for sourceid in get_source_list():
 		curs = dbconn.cursor()
-		curs.execute("SELECT source_is_current(%s)", (i,))
+		curs.execute("SELECT source_is_current(%s)", (sourceid,))
 		res = curs.fetchone()[0]
 		if(res):
-			stalesources.append(i)
+			stalesources.append(sourceid)
 	return stalesources
 
 def mark_source_current(source):
 	''' Mark a source as having been updated '''
-	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
 	curs.execute("UPDATE datasource SET lastupdate=now() WHERE datsourceid=%s", (source,))
 
-def define_source(sourcename, sourcetype, updinterval=None, site=None, path=None, login=None, pass=None):
-	''' "source" is a short name of a source
+def define_source(sourcename, sourcetype, updinterval=None, site=None, path=None, login=None, lpass=None):
+	''' "sourcename" is a human-readable name of a source
 	sourcetype is one of (ftp, http, https, pop3, scp, file)
 		Not all of these will initially be implemented
 	site is a hostname of where to retrieve files. Blank for "file" sourcetype
 	path is URL components after the hostname, or FTP components, or ...
 		leave blank for pop3
 	login is the login name for the resource (if applicable)
-	pass is the password for the resource (if applicable)
+	lpass is the password for the resource (if applicable)
 
 	We may need to figure out a way to work geo and time information in here? Maybe? '''
-	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
-	curs.execute("INSERT INTO datasource(sourcename, sourcetype, updinterval, site, path, login, pass) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING datsourceid;", (sourcename, sourcetype, updinterval, site, path, login, pass) )
+	curs.execute("INSERT INTO datasource(sourcename, sourcetype, updinterval, site, path, login, pass) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING datsourceid;", (sourcename, sourcetype, updinterval, site, path, login, lpass) )
 	return curs.fetchone()[0]
 
 #################################################
@@ -138,9 +138,9 @@ def handle_source_update(source):
 		exit(1)
 		
 
-def getNeededSources(source, cachedir):
+#def getNeededSources(source, cachedir):
 	# Is this better, or..
-def source_do_ihave(source, filename):
+#def source_do_ihave(source, filename):
 	# Is this better?
 
 #################################################
@@ -148,18 +148,18 @@ def source_do_ihave(source, filename):
 
 def get_source_info(source):
 	# Returns info from define_source
-	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
 	curs.execute("SELECT sourcename, updinterval, lastupdate, sourcetype, site, path, login, pass FROM datasource WHERE datsourceid=?", (source,))
 	res = curs.fetchone()
 	return res
 
-def source_retrieveall(source):
+#def source_retrieveall(source):
 	# Needed for some sourcetypes, like pop3 and *maybe* file?
 	#	For these sources, if there is data, it is imported.
 
 def get_source_type(source):
-	dbconn = psycopg2.connect(PSQL_CONN_STRING)
+	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
 	curs.execute("SELECT sourcetype FROM datasource WHERE datsourceid=?", (source,))
 	res = curs.fetchone()[0]
@@ -168,7 +168,7 @@ def get_source_type(source):
 #################################################
 # Data retrieval functions
 
-def get_ftplist(site, path, user=None, pass=None):
+def get_ftplist(site, path, user=None, lpass=None):
 	try:
 		ftphandle = FTP(site)
 	except Exception:
@@ -176,7 +176,7 @@ def get_ftplist(site, path, user=None, pass=None):
 
 	if(user != None):
 		try:
-			ftphandle.login(user,pass)
+			ftphandle.login(user,lpass)
 		except Exception:
 			print "Failed to login to site"
 	else:
@@ -184,7 +184,7 @@ def get_ftplist(site, path, user=None, pass=None):
 	files = ftphandle.nlst(path)
 	return files
 
-def get_ftpfile(targfile, site, filename, user=None, pass=None):
+def get_ftpfile(targfile, site, filename, user=None, lpass=None):
 	try:
 		ftphandle = FTP(site)
 	except Exception:
@@ -192,7 +192,7 @@ def get_ftpfile(targfile, site, filename, user=None, pass=None):
 
 	if(user != None):
 		try:
-			ftphandle.login(user,pass)
+			ftphandle.login(user,lpass)
 		except Exception:
 			print "Failed to login to site"
 	else:
