@@ -12,6 +12,7 @@
 #	3) Which account will this script run under?
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
+from geodb import *
 import psycopg2
 import config,importworker	# If this fails, move the template to an actual file
 from ftplib import FTP

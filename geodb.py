@@ -13,7 +13,7 @@ def get_fieldid_for_field(fieldname):
 
 def get_dbconn_string():
 	returner = ""
-	if(config.DBUSER != None):
+	if(('config.DBUSER' in globals() ) and (config.DBUSER != None)):
 		returner = "dbname=%s user=%s password=%s" % (config.DBNAME, config.DBUSER, config.DBPASS)
 	else:
 		returner = "dbname=%s" % (config.DBNAME)

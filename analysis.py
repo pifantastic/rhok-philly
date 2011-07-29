@@ -5,7 +5,8 @@ Analysis of weather data from satellite and ground sources.
 Goal: Generate contoured maps of the data plotted by geographical location.
 """
 
-import config, psycopg2, sys, getopt, geodb
+import config, psycopg2, sys, getopt
+from geodb import *
 from scipy.interpolate import griddata
 import matplotlib 
 matplotlib.use('Agg')  # This & second matplotlib import enable backend for SVG support
@@ -22,7 +23,7 @@ def get_daily_field_values(day,month,year,fieldname):
   dbconn = psycopg2.connect(get_dbconn_string())
   curs = dbconn.cursor()
 
-  fieldid = geodb.get_fieldid_for_field(fieldname)
+  fieldid = get_fieldid_for_field(fieldname)
   datefield = psycopg2.Date(year,month,day)
   curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s", (datefield,fieldid)) 
   # Could return geotimespace.locid if need be, but not right now.
@@ -33,7 +34,7 @@ def get_monthly_field_averages(fieldname):
   curs = dbconn.cursor()
   # Get average named field value (from 2 years of data) for every month. 
   # Tuples will be lat, long, location id, month number, and average for that field
-  fieldid = geodb.get_fieldid_for_field(fieldname)
+  fieldid = get_fieldid_for_field(fieldname)
 
   curs.execute("SELECT lat,lng,myquery.locid,monthtime,avggeoval FROM " +\
     "(SELECT locid,EXTRACT(month FROM geotimespace.date) "+\
@@ -55,7 +56,7 @@ def get_month_field_averages(month,qtype,fieldname):
 
   dbconn = psycopg2.connect(get_dbconn_string())
   curs = dbconn.cursor()
-  fieldid = geodb.get_fieldid_for_field(fieldname)
+  fieldid = get_fieldid_for_field(fieldname)
   # Get average named field value(from 2 years of data) for given month. 
   # Tuples will be lat, long, location id, month number, and average value for that field
   curs.execute("SELECT lat,lng,avggeoval FROM "+\
