@@ -2,6 +2,7 @@
 
 CREATE TABLE datasource (
 	datsourceid SERIAL UNIQUE,
+	sourcename TEXT UNIQUE,
 	updinterval INTERVAL, -- Leave NULL for manual updates only
 	lastupdate TIMESTAMP, -- Will initially be NULL, ideally never after
 	sourcetype VARCHAR(10) NOT NULL,
