@@ -26,6 +26,8 @@ def handle_db_import(extension, thisfile):
 		handle_excel_input(thisfile)
 	elif(extension == "xlsx"):	# Excel 97+. We can't handle this yet.
 		die("Excel 97+ files are not supported")
+	elif(extension == "mark"):	# A "mark" file is full of random data, used for debugging. No import.
+		print "Got mark file " + thisfile
 	else:				# Something else we're not going to even try
 		die("Unrecognised extension " + extension + " for " + thisfile)
 
