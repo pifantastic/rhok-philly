@@ -10,10 +10,6 @@
 #		database?
 #	2) Should this be invokable by the CGI or just by cron/manual invoke?
 #	3) Which account will this script run under?
-#
-# Still TODO:
-#	1) Write main()
-#	2) db_import_file(source, thisfile)
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
 import config,importworker	# If this fails, move the template to an actual file
@@ -70,7 +66,7 @@ def get_stale_sources():
 	return stalesources
 
 def mark_source_current(source):
-''' Mark a source as having been updated '''
+	''' Mark a source as having been updated '''
 	dbconn = psycopg2.connect(PSQL_CONN_STRING)
 	curs = dbconn.cursor()
 	curs.execute("UPDATE datasource SET lastupdate=now() WHERE datsourceid=%s", (source,))
@@ -124,9 +120,9 @@ def get_file(source, filename):
 # 	Do we already have this chunk of data?
 
 def handle_source_update(source):
-'''
-Fetch all stale files from the given source
-'''
+	'''
+	Fetch all stale files from the given source
+	'''
 	sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
 	if(sourcetype == "ftp"):
 		cachedir = get_cache_filedir(source)
@@ -143,15 +139,15 @@ Fetch all stale files from the given source
 		
 
 def getNeededSources(source, cachedir):
-# Is this better, or..
+	# Is this better, or..
 def source_do_ihave(source, filename):
-# Is this better?
+	# Is this better?
 
 #################################################
 # Misc
 
 def get_source_info(source):
-# Returns info from define_source
+	# Returns info from define_source
 	dbconn = psycopg2.connect(PSQL_CONN_STRING)
 	curs = dbconn.cursor()
 	curs.execute("SELECT sourcename, updinterval, lastupdate, sourcetype, site, path, login, pass FROM datasource WHERE datsourceid=?", (source,))
@@ -159,8 +155,8 @@ def get_source_info(source):
 	return res
 
 def source_retrieveall(source):
-# Needed for some sourcetypes, like pop3 and *maybe* file?
-#	For these sources, if there is data, it is imported.
+	# Needed for some sourcetypes, like pop3 and *maybe* file?
+	#	For these sources, if there is data, it is imported.
 
 def get_source_type(source):
 	dbconn = psycopg2.connect(PSQL_CONN_STRING)
@@ -223,7 +219,7 @@ def get_httpfile(url):
 # Local cache management functions
 
 def get_cache_filedir(source):
-''' Where are our cachefiles stored? Use this to sync '''
+	''' Where are our cachefiles stored? Use this to sync '''
 	sourcetype = get_source_type(source)
 	if(sourcetype == "ftp"):
 		return GROUNDDATAPATH + source 
@@ -232,11 +228,11 @@ def get_cache_filedir(source):
 		exit(1)
 
 def build_cache_filename(source, filename):
-''' Use a predefined cachedir, sourcename, and sourcetype to attempt to integrate data into a source-specific
+	''' Use a predefined cachedir, sourcename, and sourcetype to attempt to integrate data into a source-specific
 	subdirectory so that:
 	1) We can identify when we already have a certain file, for protocols (like FTP) where these might stick around
 	2) Filenames won't overwrite each other for protocols where there are no filenames
-'''
+	'''
 	sourcetype = get_source_type(source)
 	if(sourcetype == "ftp"):
 		os.mkdir(GROUNDDATAPATH + source)
