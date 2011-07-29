@@ -2,10 +2,11 @@
 #
 # Library code to handle software imports
 
-import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
+import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess, errno
+from config import *
 from geodb import *
 import psycopg2
-import config,importworker	# If this fails, move the template to an actual file
+import importworker	# If this fails, move the template to an actual file
 from ftplib import FTP
 
 
@@ -35,7 +36,7 @@ def get_stale_sources():
 		curs = dbconn.cursor()
 		curs.execute("SELECT source_is_current(%s)", (sourceid,))
 		res = curs.fetchone()[0]
-		if(res):
+		if(res == False):
 			stalesources.append(sourceid)
 	return stalesources
 
@@ -44,6 +45,7 @@ def mark_source_current(source):
 	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
 	curs.execute("UPDATE datasource SET lastupdate=now() WHERE datsourceid=%s", (source,))
+	dbconn.commit()
 
 def define_source(sourcename, sourcetype, updinterval=None, site=None, path=None, login=None, lpass=None):
 	''' "sourcename" is a human-readable name of a source
@@ -59,6 +61,7 @@ def define_source(sourcename, sourcetype, updinterval=None, site=None, path=None
 	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
 	curs.execute("INSERT INTO datasource(sourcename, sourcetype, updinterval, site, path, login, pass) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING datsourceid;", (sourcename, sourcetype, updinterval, site, path, login, lpass) )
+	dbconn.commit()
 	return curs.fetchone()[0]
 
 #################################################
@@ -80,6 +83,7 @@ def get_file(source, filename):
 	file path
 
 	'''
+	print "get_file(%s,%s)" % (source, filename)
 	sourcetype = get_source_type(source)
 	if(sourcetype == "ftp"):
 		sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
@@ -99,7 +103,7 @@ def get_source_info(source):
 	# Returns info from define_source
 	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
-	curs.execute("SELECT sourcename, updinterval, lastupdate, sourcetype, site, path, login, pass FROM datasource WHERE datsourceid=?", (source,))
+	curs.execute("SELECT sourcename, updinterval, lastupdate, sourcetype, site, path, login, pass FROM datasource WHERE datsourceid=%s", (source,))
 	res = curs.fetchone()
 	return res
 
@@ -110,9 +114,17 @@ def get_source_info(source):
 def get_source_type(source):
 	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
-	curs.execute("SELECT sourcetype FROM datasource WHERE datsourceid=?", (source,))
+	curs.execute("SELECT sourcetype FROM datasource WHERE datsourceid=%s", (source,))
 	res = curs.fetchone()[0]
 	return res
+
+def get_source_with_name(sourcename):
+	dbconn = psycopg2.connect(get_dbconn_string())
+	curs = dbconn.cursor()
+	curs.execute("SELECT datsourceid FROM datasource WHERE sourcename=%s", (sourcename,))
+	res = curs.fetchone()[0]
+	return res
+
 
 #################################################
 # Data retrieval functions
@@ -130,7 +142,8 @@ def get_ftplist(site, path, user=None, lpass=None):
 			print "Failed to login to site"
 	else:
 		ftphandle.login()
-	files = ftphandle.nlst(path)
+	ftphandle.cwd(path)
+	files = ftphandle.nlst()
 	return files
 
 def get_ftpfile(targfile, site, filename, user=None, lpass=None):
@@ -149,9 +162,9 @@ def get_ftpfile(targfile, site, filename, user=None, lpass=None):
 	try:
 		targ = open(targfile, "wb")
 	except Exception:
-		print "Cound not open target filename"
+		print "Cound not open target filename %s" % targfile
 	try:
-		ftphandle.retrbinary("RETR " + path, targ.write)
+		ftphandle.retrbinary("RETR " + filename, targ.write)
 	except Exception:
 		print "Download error"
 	return
@@ -171,7 +184,8 @@ def get_cache_filedir(source):
 	''' Where are our cachefiles stored? Use this to sync '''
 	sourcetype = get_source_type(source)
 	if(sourcetype == "ftp"):
-		return GROUNDDATAPATH + source 
+		mkdir_p((DATCACHE + "%s") % source)
+		return DATCACHE + "%s" % source 
 	else:
 		print "Unsupported protocol %s" % sourcetype
 		exit(1)
@@ -184,12 +198,19 @@ def build_cache_filename(source, filename):
 	'''
 	sourcetype = get_source_type(source)
 	if(sourcetype == "ftp"):
-		os.mkdir(GROUNDDATAPATH + source)
-		return GROUNDDATAPATH + source + "/" + filename # I know source is numeric. I hope that's fine.
+		mkdir_p(DATCACHE + ("%s" % source))
+		return DATCACHE + ("%s" % source) + "/" + filename # I know source is numeric. I hope that's fine.
 	elif(sourcetype == "http"):
-		os.mkdir(GROUNDDATAPATH + source)
-		return GROUNDDATAPATH + source + "/" + filename # Ugh. I really don't know how well this will work.
+		mkdir_p(DATCACHE + ("%s" % source))
+		return DATCACHE + ("%s" % source) + "/" + filename # Ugh. I really don't know how well this will work.
 	else:
 		print "Unsupported protocol %s" % sourcetype
 		exit(1)
 
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as myerr: 
+        if myerr.errno == errno.EEXIST:
+            pass
+        else: raise

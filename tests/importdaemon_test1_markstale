@@ -1,0 +1,2 @@
+UPDATE datasource SET lastupdate=NULL WHERE sourcename='importdaemon_test1';
+

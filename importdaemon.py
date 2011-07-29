@@ -11,11 +11,13 @@
 #	2) Should this be invokable by the CGI or just by cron/manual invoke?
 #	3) Which account will this script run under?
 
-import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
+import os, sys, urllib, urllib2, getopt, csv, datetime, glob, subprocess
 from geodb import *
 from importdaemonlib import *
+from importworker import *
+from config import *
 import psycopg2
-import config,importworker	# If this fails, move the template to an actual file
+import config	# If this fails, move the template to an actual file
 from ftplib import FTP
 
 if sys.version < '2.7':
@@ -29,7 +31,7 @@ def main():
 	print "Importdaemon starting up"
 	stales = get_stale_sources()
 	for sourceid in stales:
-		print "\tHandling source " + sourceid
+		print "\tHandling source %s" % sourceid
 		handle_source_update(sourceid)
 	print "Importdaemon done"
 
