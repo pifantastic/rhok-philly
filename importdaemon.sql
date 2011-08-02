@@ -2,7 +2,7 @@
 
 CREATE TABLE datasource (
 	datsourceid SERIAL UNIQUE,
-	sourcename TEXT,
+	sourcename TEXT UNIQUE,
 	updinterval INTERVAL, -- Leave NULL for manual updates only
 	lastupdate TIMESTAMP, -- Will initially be NULL, ideally never after
 	protocol VARCHAR(10) NOT NULL, -- ftp, http, https, pop3, ...

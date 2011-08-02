@@ -1,0 +1,20 @@
+#!/usr/bin/python
+# Quick and dirty "null test". Ask importdaemon to sync some files over from
+# my dev box. I have a FTP server there that allows anonymous FTP and has
+# a subdir pub/rhoktest1 containing sync{1..4}.mark
+# Let's see if the sync code can manage it.
+#
+# Part 1: Make an entry in the database table.
+
+import sys
+sys.path.append('..')
+from geodb import *
+from importdaemonlib import *
+
+def main():
+	sourceid = define_source('importdaemon_test1', 'ftp', '5 minutes', 'localhost', '/pub/rhoktest1', 'anonymous', 'pgunn@dachte.org')
+	print "Source is %s" % (sourceid)
+
+
+
+main()

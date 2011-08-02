@@ -108,7 +108,7 @@ def makeFilename(myForm):
 	if myForm["submission"].value == "singleday":
 		return myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value
 	elif myForm["submission"].value == "monthavg":
-		return myForm["querytype"].value+"_"+myForm["startyear"].value+"-"myForm["endyear"].value+"-"+myForm["month"].value
+		return myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["endyear"].value+"-"+myForm["month"].value
 
 #------------------------------------------------------------------------
 # Dealing with content
