@@ -45,11 +45,11 @@ def mark_source_current(source):
 	curs = dbconn.cursor()
 	curs.execute("UPDATE datasource SET lastupdate=now() WHERE datsourceid=%s", (source,))
 
-def define_source(sourcename, sourcetype, updinterval=None, site=None, path=None, login=None, lpass=None):
+def define_source(sourcename, protocol, updinterval=None, site=None, path=None, login=None, lpass=None):
 	''' "sourcename" is a human-readable name of a source
-	sourcetype is one of (ftp, http, https, pop3, scp, file)
+	protocol is one of (ftp, http, https, pop3, scp, file)
 		Not all of these will initially be implemented
-	site is a hostname of where to retrieve files. Blank for "file" sourcetype
+	site is a hostname of where to retrieve files. Blank for "file" protocol 
 	path is URL components after the hostname, or FTP components, or ...
 		leave blank for pop3
 	login is the login name for the resource (if applicable)
@@ -58,19 +58,19 @@ def define_source(sourcename, sourcetype, updinterval=None, site=None, path=None
 	We may need to figure out a way to work geo and time information in here? Maybe? '''
 	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
-	curs.execute("INSERT INTO datasource(sourcename, sourcetype, updinterval, site, path, login, pass) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING datsourceid;", (sourcename, sourcetype, updinterval, site, path, login, lpass) )
+	curs.execute("INSERT INTO datasource(sourcename, protocol, updinterval, site, path, login, pass) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING datsourceid;", (sourcename, protocol, updinterval, site, path, login, lpass) )
 	return curs.fetchone()[0]
 
 #################################################
 # Source retrieval functions
 
 def get_filelist(source):
-	sourcetype = get_source_type(source)
-	if(sourcetype == "ftp"):
-		sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
+	protocol = get_protocol(source)
+	if(protocol == "ftp"):
+		sourcename, updinterval, lastupdate, protocol, site, path, ftplogin, ftppass = get_source_info(source)
 		files = get_ftplist(site, path, ftplogin, ftppass)
 	else:
-		print "Unsupported protocol %s" % sourcetype
+		print "Unsupported protocol %s" % protocol 
 		exit(1)
 	return files
 
@@ -80,13 +80,13 @@ def get_file(source, filename):
 	file path
 
 	'''
-	sourcetype = get_source_type(source)
-	if(sourcetype == "ftp"):
-		sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
+	protocol = get_protocol(source)
+	if(protocol == "ftp"):
+		sourcename, updinterval, lastupdate, protocol, site, path, ftplogin, ftppass = get_source_info(source)
 		targfile = build_cache_filename(source, filename)
 		get_ftpfile(targfile, site, path + "/" + filename, ftplogin, ftppass)
 	else:
-		print "Unsupported protocol %s" % sourcetype
+		print "Unsupported protocol %s" % protocol
 		exit(1)
 
 		
@@ -99,18 +99,18 @@ def get_source_info(source):
 	# Returns info from define_source
 	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
-	curs.execute("SELECT sourcename, updinterval, lastupdate, sourcetype, site, path, login, pass FROM datasource WHERE datsourceid=?", (source,))
+	curs.execute("SELECT sourcename, updinterval, lastupdate, protocol, site, path, login, pass FROM datasource WHERE datsourceid=?", (source,))
 	res = curs.fetchone()
 	return res
 
 #def source_retrieveall(source):
-	# Needed for some sourcetypes, like pop3 and *maybe* file?
+	# Needed for some protocols, like pop3 and *maybe* file?
 	#	For these sources, if there is data, it is imported.
 
-def get_source_type(source):
+def get_protocol(source):
 	dbconn = psycopg2.connect(get_dbconn_string())
 	curs = dbconn.cursor()
-	curs.execute("SELECT sourcetype FROM datasource WHERE datsourceid=?", (source,))
+	curs.execute("SELECT protocol FROM datasource WHERE datsourceid=?", (source,))
 	res = curs.fetchone()[0]
 	return res
 
@@ -169,27 +169,27 @@ def get_httpfile(url):
 
 def get_cache_filedir(source):
 	''' Where are our cachefiles stored? Use this to sync '''
-	sourcetype = get_source_type(source)
-	if(sourcetype == "ftp"):
+	protocol = get_protocol(source)
+	if(protocol == "ftp"):
 		return GROUNDDATAPATH + source 
 	else:
-		print "Unsupported protocol %s" % sourcetype
+		print "Unsupported protocol %s" % protocol
 		exit(1)
 
 def build_cache_filename(source, filename):
-	''' Use a predefined cachedir, sourcename, and sourcetype to attempt to integrate data into a source-specific
+	''' Use a predefined cachedir, sourcename, and protocol to attempt to integrate data into a source-specific
 	subdirectory so that:
 	1) We can identify when we already have a certain file, for protocols (like FTP) where these might stick around
 	2) Filenames won't overwrite each other for protocols where there are no filenames
 	'''
-	sourcetype = get_source_type(source)
-	if(sourcetype == "ftp"):
+	protocol = get_protocol(source)
+	if(protocol == "ftp"):
 		os.mkdir(GROUNDDATAPATH + source)
 		return GROUNDDATAPATH + source + "/" + filename # I know source is numeric. I hope that's fine.
-	elif(sourcetype == "http"):
+	elif(protocol == "http"):
 		os.mkdir(GROUNDDATAPATH + source)
 		return GROUNDDATAPATH + source + "/" + filename # Ugh. I really don't know how well this will work.
 	else:
-		print "Unsupported protocol %s" % sourcetype
+		print "Unsupported protocol %s" % protocol
 		exit(1)
 

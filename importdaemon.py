@@ -43,8 +43,8 @@ def handle_source_update(source):
 	'''
 	Fetch all stale files from the given source
 	'''
-	sourcename, updinterval, lastupdate, sourcetype, site, path, ftplogin, ftppass = get_source_info(source)
-	if(sourcetype == "ftp"):
+	sourcename, updinterval, lastupdate, protocol, site, path, ftplogin, ftppass = get_source_info(source)
+	if(protocol == "ftp"):
 		cachedir = get_cache_filedir(source)
 		cachefiles = set(os.listdir(cachedir))
 		remfiles = set(get_filelist(source))
@@ -54,7 +54,7 @@ def handle_source_update(source):
 			db_import_file(source, thisfile)
 		mark_source_current(source)
 	else:
-		print "Unsupported protocol %s" % sourcetype
+		print "Unsupported protocol %s" % protocol
 		exit(1)
 		
 #def getNeededSources(source, cachedir):

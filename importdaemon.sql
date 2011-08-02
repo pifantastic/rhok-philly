@@ -5,7 +5,7 @@ CREATE TABLE datasource (
 	sourcename TEXT,
 	updinterval INTERVAL, -- Leave NULL for manual updates only
 	lastupdate TIMESTAMP, -- Will initially be NULL, ideally never after
-	sourcetype VARCHAR(10) NOT NULL,
+	protocol VARCHAR(10) NOT NULL, -- ftp, http, https, pop3, ...
 	site TEXT,
 	path TEXT,
 	login VARCHAR(20),
