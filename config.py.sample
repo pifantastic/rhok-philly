@@ -8,3 +8,6 @@ DBPASS = 'pass'
 # from the same directory.
 
 GROUNDDATAPATH = '/home/myaccount/rhok2011/data/'
+
+IMAGERESULTPATH = '/var/www/climate/images/'
+DATAEXPORTPATH = '/var/www/climate/export/'
