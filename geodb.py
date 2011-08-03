@@ -5,11 +5,15 @@
 import config,psycopg2
 
 def get_fieldid_for_field(fieldname):
-  conn = psycopg2.connect(get_dbconn_string())
+  conn = opendb()
   cur = conn.cursor()
   cur.execute("SELECT fieldid FROM geofield WHERE fieldname=%s;", (fieldname,))
   returner = cur.fetchone()[0] # TODO Handle if we don't get one! Make a new one?
   return returner
+
+def opendb():
+	conn = psycopg2.connect(get_dbconn_string()
+	return conn
 
 def get_dbconn_string():
 	returner = ""
