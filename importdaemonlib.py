@@ -3,10 +3,10 @@
 ''' Library code to handle software imports '''
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess, errno
-from config import *
+from config import *	# If this fails, move the template to an actual file
 from dbutils import *
 import psycopg2
-import importworker	# If this fails, move the template to an actual file
+import importworker
 from ftplib import FTP
 
 
