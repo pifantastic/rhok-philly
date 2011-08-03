@@ -3,7 +3,7 @@
 import cgi
 import cgitb
 from os import path
-from cgiutils import *
+from cgiutils import * # Comes with dbutils
 import htmlGen as h
 
 cgitb.enable()  # Enabling traceback to display in the browser.
@@ -72,6 +72,7 @@ def printDataOptions():
 		print h.inputRadioButton("querytype",key) + val + '<br/>'
 
 def monthAvgForm():
+	""" This is form would select a month to investigate and the  """
 	print '<form class="formblock" id="formid" name="climateform" action="index.cgi" method="post" enctype="multipart/form-data">'
 	print '<h3>Monthly Averages</h3>'
 	print '<p id="col_1"><em>Month:</em>',
@@ -79,15 +80,15 @@ def monthAvgForm():
 	print '<br/><em>Start Year:</em>'
 	print '<select name="startyear">'
 	printYearOptions()
-	print '</select>\n'
+	print '</select>  '
 	print '<br/><em>End Year:</em>'
 	print '<select name="endyear">'
 	printYearOptions()
 	print '</select></p>'
 	print '<p id="col_2"><br/><em>Data Type</em><br/>'
 	printDataOptions()
-	print '<br/><input type=submit name="submission" value="monthavg"></p>'
-	print '</form>'
+	h.inputSubmit("submission","get data")
+	print '</p>\n</form>'
 
 def singleDayForm():
 	print '<form class="formblock" id="formid" name="climateform" action="index.cgi" method="post" enctype="multipart/form-data">'
@@ -97,7 +98,7 @@ def singleDayForm():
 	print '</p>'
 	print '<p id="col_2"><em>Data Type:</em><br/>'
 	printDataOptions()
-	print '<br/><input type=submit name="submission" value="singleday" ></p>'
+	h.inputSubmit("submission","get data")
 	print '</form>'
 
 def singleDayFormContents():
@@ -116,7 +117,7 @@ def singleDayFormContents():
 	print '</select>'
 
 def dataForm():
-	print '<form class="formblock" id="formid" name="climateform" action="index.cgi" method="post" enctype="multipart/form-data">'
+	print '<form id="formid" name="climateform" action="index.cgi" method="post" enctype="multipart/form-data">'
 	printDataOptions()
 
 	# Date range
@@ -140,12 +141,13 @@ def dataForm():
 	print '<select name="endyear">'
 	printYearOptions()
 	print '</select>'
-	print '<input type=submit name="daterange" value="get data"></p>'
+	h.inputSubmit("datarange","get data")
+	print '</p>'
 	
 	# Single date
 	print '<p>'
 	singleDayFormContents()
-	print '<input type=submit name="singleday" value="get data"></p>'
+	h.inputSubmit("singleday","get data")
 
 	# Last N years
 	print '<p>'
@@ -154,11 +156,12 @@ def dataForm():
 	printYearRanges() # This should change based on database availability
 	print '</select>'
 	print 'years.'
-	print '<input type=submit name="pastyears" value="get data"></p>'
+	h.inputSubmit("pastyears","get data")
+	print '</p>'
 	print '</form>'
 
 def insertQueryMenu():
-	print '<div id="querybar">'
+	print '<div class="formblock">'
 	dataForm()
 	print '</div> '
 
