@@ -49,12 +49,15 @@ def earliestCompleteData(datatype):
 	for given datatype."""
 	conn = opendb()
 	curs = conn.cursor()
-	curs.execute("")
+	curs.execute("SELECT satdates FROM (SELECT DISTINCT date_part('year',date) FROM geotimespace NATURAL JOIN location WHERE location.sourceid='sat') AS satdates JOIN (SELECT DISTINCT date_part('year',date)  FROM geotimespace NATURAL JOIN location WHERE location.sourceid='ground') AS gnddates ON satdates = gnddates ORDER BY satdates LIMIT 1;")
+	return curs.fetchone()[0]
 
 def latestCompleteData(datatype):
 	"""Returns the latest date for which all sources have entries 
 	for given datatype."""
 	conn = opendb()
 	curs = conn.cursor()
-	curs.execute("")
+	curs.execute("SELECT satdates FROM (SELECT DISTINCT date_part('year',date) FROM geotimespace NATURAL JOIN location WHERE location.sourceid='sat') AS satdates JOIN (SELECT DISTINCT date_part('year',date)  FROM geotimespace NATURAL JOIN location WHERE location.sourceid='ground') AS gnddates ON satdates = gnddates ORDER BY satdates DESC LIMIT 1;")
+	return curs.fetchone()[0]
+
 
