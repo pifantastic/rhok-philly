@@ -12,7 +12,7 @@ def get_fieldid_for_field(fieldname):
 
 def opendb():
 	''' Give us a database connection. Configured by data from the config module. '''
-	conn = psycopg2.connect(get_dbconn_string()
+	conn = psycopg2.connect(get_dbconn_string())
 	return conn
 
 def get_dbconn_string():
