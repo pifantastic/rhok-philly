@@ -96,7 +96,7 @@ def insert_ground_loc_csv(csv_path):
 
   station_ids, station_names, lats, longs = zip(*data)
 
-  dbconn = psycopg2.connect(get_dbconn_string())
+  dbconn = opendb()
   curs = dbconn.cursor()
 
   for i in range(len(station_ids)):
@@ -115,7 +115,7 @@ def parse_ground_dbf(dbf_path):
 def insert_ground_data():
   temperature_files = glob.glob(config.GROUNDDATAPATH + "TMP_*.dbf")
   temperature_files.sort()
-  dbconn = psycopg2.connect(get_dbconn_string())
+  dbconn = opendb()
 
   tempmax_fieldid = get_fieldid_for_field("tempmax")
   tempmin_fieldid = get_fieldid_for_field("tempmin")
@@ -151,7 +151,7 @@ def insert_ground_data():
         
   precip_files = glob.glob(config.GROUNDDATAPATH + "PCP_*.dbf")
   precip_files.sort()
-  dbconn = psycopg2.connect(get_dbconn_string())
+  dbconn = opendb()
 
   rain_fieldid= get_fieldid_for_field("rain")
 
@@ -269,7 +269,7 @@ if __name__ == "__main__":
   if CREATE_DB:
     os.system("createdb %s" % (config.DBNAME))
     os.system("psql -d %s -f %s" % (config.DBNAME, 'schema.sql')) # Must be in the current dir :(
-  conn = psycopg2.connect(get_dbconn_string())
+  conn = opendb()
 
   if IMPORT_SAT:
     reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',')

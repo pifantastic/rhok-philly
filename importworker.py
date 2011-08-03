@@ -11,20 +11,21 @@ def db_import_file(source, thisfile):
 
 	print "db_import_file: " + thisfile
 	extension = split(thisfile, '.')[-1]
-	handle_db_import(extension, thisfile) # Do we really need source? Maybe we don't!
+	loctype = get_source_loctype(source)
+	handle_db_import(loctype, extension, thisfile) # Do we really need source? Maybe we don't!
 
-def handle_db_import(extension, thisfile):
+def handle_db_import(loctype, extension, thisfile):
 	''' Based on file extension, actually call the appropriate import routines '''
 	if(extension == "csv"):		# csv, with header
-		handle_delimited_input(',', thisfile)
+		handle_delimited_input(',', thisfile, loctype)
 	elif(extension == "txt"):	# Assume this is csv too
-		handle_delimited_input(',', thisfile)
+		handle_delimited_input(',', thisfile, loctype)
 	elif(extension == "cgi"):	# The text/http output from NASA cgis? We need to make sure the caches actually have this extension!
-		handle_delimited_input(' ', thisfile) # We'll actually accept any whitespace
+		handle_delimited_input(' ', thisfile, loctype) # We'll actually accept any whitespace
 	elif(extension == "dbf"):	# DBase. Sigh.
-		handle_dbase_input(thisfile)
+		handle_dbase_input(thisfile, loctype)
 	elif(extension == "xls"):	# Older versions of excel. We maybe can handle these
-		handle_excel_input(thisfile)
+		handle_excel_input(thisfile, loctype)
 	elif(extension == "xlsx"):	# Excel 97+. We can't handle this yet.
 		die("Excel 97+ files are not supported")
 	elif(extension == "mark"):	# A "mark" file is full of random data, used for debugging. No import.
@@ -41,19 +42,19 @@ def die(message, returncode=1):
 ######################################
 # Import handlers
 
-def handle_delimited_input(sep, file):
+def handle_delimited_input(sep, fname, loctype):
 	'''
-	Input handler for delimited input. Takes two arguments, a separator and a filename.
+	Input handler for delimited input. Takes three arguments, a separator, a filename, and
+	a loctype
 	Assumes the first row has fieldnames.
 	If the separator is ' ', split on any whitespace.
 	'''
-
-def handle_dbase_input(file): # This is best-effort
+def handle_dbase_input(fname, loctype): # This is best-effort
 	'''
 	Input handler for dbase files.
 	'''
 
-def handle_excel_input(file): # This is best-effort
+def handle_excel_input(fname, loctype): # This is best-effort
 	'''
 	Input handler for excel files. Will not work with the new "open" "XML" files.
 	'''

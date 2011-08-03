@@ -20,7 +20,7 @@ def usage(exit_code=0):
 def get_daily_field_values(day,month,year,fieldname):
   ''' Get data for a specified field for a specific day. 
       Returned tuples will be lat, long, and value for that field.'''
-  dbconn = psycopg2.connect(get_dbconn_string())
+  dbconn = opendb()
   curs = dbconn.cursor()
 
   fieldid = get_fieldid_for_field(fieldname)
@@ -30,7 +30,7 @@ def get_daily_field_values(day,month,year,fieldname):
   return curs.fetchall()
 
 def get_monthly_field_averages(fieldname):
-  dbconn = psycopg2.connect(get_dbconn_string())
+  dbconn = opendb()
   curs = dbconn.cursor()
   # Get average named field value (from 2 years of data) for every month. 
   # Tuples will be lat, long, location id, month number, and average for that field
@@ -54,7 +54,7 @@ def get_month_field_averages(month,qtype,fieldname):
       fieldname
   """
 
-  dbconn = psycopg2.connect(get_dbconn_string())
+  dbconn = opendb()
   curs = dbconn.cursor()
   fieldid = get_fieldid_for_field(fieldname)
   # Get average named field value(from 2 years of data) for given month. 
@@ -70,7 +70,7 @@ def get_month_field_averages(month,qtype,fieldname):
 
 def get_monthly_tempmax_averages():
   return get_monthly_field_averages("tempmax")
-  #dbconn = psycopg2.connect(get_dbconn_string())
+  #dbconn = opendb()
   #curs = dbconn.cursor()
   # Get average maximum temperature (from 2 years of data) for every month. 
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
@@ -90,7 +90,7 @@ def get_month_tempmax_averages(month,qtype):
   #qtype = 'sat' or 'ground'
 
   #"""
-  #dbconn = psycopg2.connect(get_dbconn_string())
+  #dbconn = opendb()
   #curs = dbconn.cursor()
   # Get average maximum temperature (from 2 years of data) for given month. 
   # Tuples will be lat, long, location id, month number, and average (maximum) temperature 

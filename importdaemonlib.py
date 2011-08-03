@@ -17,7 +17,7 @@ from ftplib import FTP
 def get_source_list():
 	''' Returns datsourceid for each defined datasource
 	'''
-	dbconn = psycopg2.connect(get_dbconn_string())
+	dbconn = opendb()
 	curs = dbconn.cursor()
 	curs.execute("SELECT datsourceid FROM datasource;")
 	return curs.fetchall()
@@ -30,7 +30,7 @@ def get_stale_sources():
 	LAST_RETRIEVED is updated if we're either current or
 	just got some new data.
 	'''
-	dbconn = psycopg2.connect(get_dbconn_string())
+	dbconn = opendb()
 	stalesources = []
 	for sourceid in get_source_list():
 		curs = dbconn.cursor()
@@ -42,7 +42,7 @@ def get_stale_sources():
 
 def mark_source_current(source):
 	''' Mark a source as having been updated '''
-	dbconn = psycopg2.connect(get_dbconn_string())
+	dbconn = opendb()
 	curs = dbconn.cursor()
 	curs.execute("UPDATE datasource SET lastupdate=now() WHERE datsourceid=%s", (source,))
 	dbconn.commit()
@@ -58,7 +58,7 @@ def define_source(sourcename, protocol, updinterval=None, site=None, path=None, 
 	lpass is the password for the resource (if applicable)
 
 	We may need to figure out a way to work geo and time information in here? Maybe? '''
-	dbconn = psycopg2.connect(get_dbconn_string())
+	dbconn = opendb()
 	curs = dbconn.cursor()
 	curs.execute("INSERT INTO datasource(sourcename, protocol, updinterval, site, path, login, pass) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING datsourceid;", (sourcename, protocol, updinterval, site, path, login, lpass) )
 	dbconn.commit()
@@ -100,7 +100,7 @@ def get_file(source, filename):
 
 def get_source_info(source):
 	# Returns info from define_source
-	dbconn = psycopg2.connect(get_dbconn_string())
+	dbconn = opendb()
 	curs = dbconn.cursor()
 	curs.execute("SELECT sourcename, updinterval, lastupdate, protocol, site, path, login, pass FROM datasource WHERE datsourceid=%s", (source,))
 	res = curs.fetchone()
@@ -111,14 +111,24 @@ def get_source_info(source):
 	#	For these sources, if there is data, it is imported.
 
 def get_protocol(source):
-	dbconn = psycopg2.connect(get_dbconn_string())
+	dbconn = opendb()
 	curs = dbconn.cursor()
 	curs.execute("SELECT protocol FROM datasource WHERE datsourceid=%s", (source,))
 	res = curs.fetchone()[0]
 	return res
 
+def get_source_loctype(source):
+	'''
+	sat or ground
+	'''
+	dbconn = opendb()
+	curs = dbconn.cursor()
+	curs.execute("SELECT loctype FROM datasource WHERE datsourceid=%s", (source,))
+	res = curs.fetchone()[0]
+	return res
+
 def get_source_with_name(sourcename):
-	dbconn = psycopg2.connect(get_dbconn_string())
+	dbconn = opendb()
 	curs = dbconn.cursor()
 	curs.execute("SELECT datsourceid FROM datasource WHERE sourcename=%s", (sourcename,))
 	res = curs.fetchone()[0]
