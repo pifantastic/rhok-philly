@@ -1,6 +1,6 @@
 #!/usr/bin/python
-#
-# Library code to handle software imports
+
+''' Library code to handle software imports '''
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess, errno
 from config import *
