@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from analysis import graph_result
+from analysis import *
 import cgi
 import cgitb
 from os import path
@@ -63,7 +63,7 @@ def printYearOptions():
 	startyear = earliestData()
 	endyear = latestData()
 
-	for yr in range(int(startyear),int(endyear),1):
+	for yr in range(int(startyear),int(endyear)+1,1):
 		print '<option value="%s">%s</option>' %(yr,yr)
 
 def printYearRanges():
