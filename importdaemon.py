@@ -12,7 +12,7 @@
 #	3) Which account will this script run under?
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, glob, subprocess
-from geodb import *
+from dbutils import *
 from importdaemonlib import *
 from importworker import *
 from config import *
