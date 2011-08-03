@@ -1,8 +1,9 @@
 #!/usr/bin/python
-#
-#
-# importworker.py - A component that takes a source and a file and
-#	figures out the right way to shove it into the database.
+
+
+''' importworker.py - A component that takes a source and a file and
+figures out the right way to shove it into the database. '''
+
 from string import *
 
 def db_import_file(source, thisfile):
@@ -36,6 +37,9 @@ def handle_db_import(loctype, extension, thisfile):
 ######################################
 # This should maybe be moved somewhere better so it can be shared
 def die(message, returncode=1):
+	'''
+	Spits out a message to the user, and exits (optionally with a specified return code)
+	'''
 	print message
 	exit(returncode)
 

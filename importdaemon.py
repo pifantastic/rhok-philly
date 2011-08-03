@@ -1,15 +1,16 @@
 #!/usr/bin/python
-#
-# Invoked from cron, reads config file, retrieves new data from various sources.
-# Saves files if they are files. Drops HTTP or POP3 data into files, otherwise.
-# Invokes worker script appropriately.
-#
+
+''' Invoked from cron, reads config file, retrieves new data from various sources.
+Saves files if they are files. Drops HTTP or POP3 data into files, otherwise.
+Invokes worker script appropriately.
+
 #########################################
-# Design issues:
-#	1) Should this be configured primarily from a dotfile or from the
-#		database?
-#	2) Should this be invokable by the CGI or just by cron/manual invoke?
-#	3) Which account will this script run under?
+Design issues:
+	1) Should this be configured primarily from a dotfile or from the
+		database?
+	2) Should this be invokable by the CGI or just by cron/manual invoke?
+	3) Which account will this script run under?
+'''
 
 import os, sys, urllib, urllib2, getopt, csv, datetime, glob, subprocess
 from dbutils import *
