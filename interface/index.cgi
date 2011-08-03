@@ -110,7 +110,7 @@ def singleDayForm():
 def singleDayFormContents():
 	print 'Get data from a single day: '
 	#print '<em>Day:</em>'
-	print '<select name="day"'
+	print '<select name="day">'
 	printDayOptions()
 	print '</select>'
 	#print '<em>Month:</em>',
