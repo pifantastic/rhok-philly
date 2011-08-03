@@ -5,6 +5,10 @@ Analysis of weather data from satellite and ground sources.
 Goal: Generate contoured maps of the data plotted by geographical location.
 """
 
+import os
+os.environ['HOME'] = '/tmp/' # To allow Matplotlib to run under cgi
+os.environ['MPLCONFIGDIR'] = '/tmp/' 
+
 import config, psycopg2, sys, getopt
 from dbutils import *
 from scipy.interpolate import griddata
@@ -24,7 +28,7 @@ def get_daily_field_values(day,month,year,fieldname):
   curs = dbconn.cursor()
 
   fieldid = get_fieldid_for_field(fieldname)
-  datefield = psycopg2.Date(year,month,day)
+  datefield = psycopg2.Date(int(year),int(month),int(day))
   curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s", (datefield,fieldid)) 
   # Could return geotimespace.locid if need be, but not right now.
   return curs.fetchall()
