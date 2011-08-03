@@ -147,13 +147,13 @@ def dataForm():
 	print '<select name="endyear">'
 	printYearOptions()
 	print '</select>'
-	h.inputSubmit("daterange","get data")
+	print h.inputSubmit("daterange","get data")
 	print '</p>'
 	
 	# Single date
 	print '<p>'
 	singleDayFormContents()
-	h.inputSubmit("singleday","get data")
+	print h.inputSubmit("singleday","get data")
 
 	# Last N years
 	print '<p>'
@@ -162,7 +162,7 @@ def dataForm():
 	printYearRanges() # This should change based on database availability
 	print '</select>'
 	print 'years.'
-	h.inputSubmit("pastyears","get data")
+	print h.inputSubmit("pastyears","get data")
 	print '</p>'
 	print '</form>'
 
