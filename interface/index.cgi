@@ -1,11 +1,15 @@
-#! /usr/bin/python
+#!/usr/bin/python
 
+from analysis import graph_result
 import cgi
 import cgitb
 from os import path
 from cgiutils import * # Comes with dbutils
 import htmlGen as h
 from geodb import *
+
+#os.environ['HOME'] = '/tmp/' # To allow Matplotlib to run under cgi
+#os.environ['MPLCONFIGDIR'] = '/tmp/' 
 
 cgitb.enable()  # Enabling traceback to display in the browser.
 #cgitb.enable(display=0, logdir="/tmp")   # Use this for more privacy.
@@ -19,12 +23,6 @@ datatypeDict = dict({#"solarradiation":"solar radiation",
 		     #"dewpoint":"dew point",
 		     #"humidity":"humidity"
 		     })
-
-def graphCached(graphPath):
-	"""	This returns a boolean value after we figure out 
-	whether we already have a graph of the requested data."""
-	if path.isfile(graphPath): return True
-	else: return False
 
 #def dataRecorded():
 #	"""	This returns a boolean value after we figure out whether requested data is in the database."""
@@ -42,15 +40,15 @@ def insertHeader():
 	print '<h2>Satellite and Local Climate Data Monitoring Platform</h2>'
 
 def printMonthOptions():
-	print '<option value="1">January</option>'
-	print '<option value="2">February</option>'
-	print '<option value="3">March</option>'
-	print '<option value="4">April</option>'
-	print '<option value="5">May</option>'
-	print '<option value="6">June</option>'
-	print '<option value="7">July</option>'
-	print '<option value="8">August</option>'
-	print '<option value="9">September</option>'
+	print '<option value="01">January</option>'
+	print '<option value="02">February</option>'
+	print '<option value="03">March</option>'
+	print '<option value="04">April</option>'
+	print '<option value="05">May</option>'
+	print '<option value="06">June</option>'
+	print '<option value="07">July</option>'
+	print '<option value="08">August</option>'
+	print '<option value="09">September</option>'
 	print '<option value="10">October</option>'
 	print '<option value="11">November</option>'
 	print '<option value="12">December</option>'
@@ -62,8 +60,8 @@ def printDayOptions():
 def printYearOptions():
 	"""This prints <options> for years of data available. 
 	Changes based on data availability in database."""
-	startyear = earliestData().split("-")[0] # Date is returned as string
-	endyear = latestData().split("-")[0]
+	startyear = earliestData()
+	endyear = latestData()
 
 	for yr in range(int(startyear),int(endyear),1):
 		print '<option value="%s">%s</option>' %(yr,yr)
@@ -149,7 +147,7 @@ def dataForm():
 	print '<select name="endyear">'
 	printYearOptions()
 	print '</select>'
-	h.inputSubmit("datarange","get data")
+	h.inputSubmit("daterange","get data")
 	print '</p>'
 	
 	# Single date
@@ -173,18 +171,33 @@ def insertQueryMenu():
 	dataForm()
 	print '</div> '
 
-def makeFilename(myForm):
-	if myForm["submission"].value == "singleday":
-		return myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value
-	elif myForm["submission"].value == "monthavg":
-		return myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["endyear"].value+"-"+myForm["month"].value
-
 def insertAvailabilityNote():
-	enddate = "July 15, 2011"
-	print '<p>Information is available from January 01, 1997 to %s.</p>' % enddate
+	startdate = earliestData()
+	enddate = latestData()
+	print '<p>Information is available from %s to %s.</p>' % (startdate, enddate)
 
 #------------------------------------------------------------------------
-# Dealing with content
+# Functions for storing, finding, refreshing, converting graph output
+#------------------------------------------------------------------------
+
+def graphCached(graphPath):
+	"""	This returns a boolean value after we figure out 
+	whether we already have a graph of the requested data."""
+	if path.isfile(graphPath): return True
+	else: return False
+
+def makeFilename(myForm):
+	""" File names are determined the time scope requested (singleday,daterange,pastyears) and the querytype."""
+	if "singleday" in myForm:
+		return "singleday-"+myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value
+	elif "daterange" in myForm:
+		return "daterange-"+myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["startmonth"].value+"-"+myForm["startday"]+"-through-"+myForm["endyear"].value+"-"+myForm["endmonth"].value+"-"+myForm["endday"].value
+	elif "pastyears" in myForm:
+		return "pastyears-"+myForm["querytype"].value+"_"+myForm["years"]
+
+
+#------------------------------------------------------------------------
+# Dealing with page content
 #------------------------------------------------------------------------
 
 form = cgi.FieldStorage()
@@ -195,7 +208,7 @@ insertQueryMenu()
 
 if form == None:
 	print "</body></html>"
-elif "submission" in form and (form["submission"].value == "singleday"):
+elif "singleday" in form:
 	tuples = get_daily_field_values(form["day"].value,
 			       form["month"].value,
 			       form["year"].value,
@@ -204,7 +217,9 @@ elif "submission" in form and (form["submission"].value == "singleday"):
 
 	soughtGraph = "images/" + form["month"].value + "_" + form["startyear"].value + ".png"
 	if graphCached(soughtGraph):
-		print "\t<p><img src='" + soughtGraph + "'/></p>"
+		print "<p><img src='" + soughtGraph + "'/></p>"
 	else:
-		print "\t<p>We'll need to generate the", soughtGraph,"graph.</p>"
+		print "<p>We'll need to generate the", soughtGraph,"graph.</p>"
         print "</body></html>"
+else:
+	print "</body></html>"
