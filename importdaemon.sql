@@ -6,6 +6,7 @@ CREATE TABLE datasource (
 	updinterval INTERVAL, -- Leave NULL for manual updates only
 	lastupdate TIMESTAMP, -- Will initially be NULL, ideally never after
 	protocol VARCHAR(10) NOT NULL, -- ftp, http, https, pop3, ...
+	loctype SOURCE NOT NULL, -- SOURCE is an enum from schema.sql, 'sat', 'ground'
 	site TEXT,
 	path TEXT,
 	login VARCHAR(20),
