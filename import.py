@@ -16,7 +16,7 @@ Synopsis: import.py
 """
 
 import os, sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config, glob, subprocess
-from geodb import *
+from dbutils import *
 if sys.version < '2.7':
   print "Requires Python 2.7! You have ", sys.version
   sys.exit(8)
@@ -186,7 +186,7 @@ def insert_ground_data():
 ###################################################
 # Database Functions
 #
-# Consider moving these to geodb.py, as they might be
+# Consider moving these to dbutils.py, as they might be
 # used in both the analysis and import scripts.
 ###################################################
 

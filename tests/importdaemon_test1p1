@@ -8,7 +8,7 @@
 
 import sys
 sys.path.append('..')
-from geodb import *
+from dbutils import *
 from importdaemonlib import *
 
 def main():
