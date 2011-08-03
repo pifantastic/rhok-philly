@@ -9,5 +9,5 @@ DBPASS = 'pass'
 
 GROUNDDATAPATH = '/home/myaccount/rhok2011/data/'
 
-IMAGERESULTPATH = '/var/www/climate/images/'
-DATAEXPORTPATH = '/var/www/climate/export/'
+IMAGERESULTPATH = 'images/'
+DATAEXPORTPATH = 'export/'
