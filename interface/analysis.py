@@ -6,7 +6,7 @@ Goal: Generate contoured maps of the data plotted by geographical location.
 """
 
 import config, psycopg2, sys, getopt
-from geodb import *
+from dbutils import *
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 import numpy as np
