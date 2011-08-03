@@ -7,6 +7,7 @@ from os import path
 from cgiutils import * # Comes with dbutils
 import htmlGen as h
 from geodb import *
+import config
 
 #os.environ['HOME'] = '/tmp/' # To allow Matplotlib to run under cgi
 #os.environ['MPLCONFIGDIR'] = '/tmp/' 
@@ -188,12 +189,14 @@ def graphCached(graphPath):
 
 def makeFilename(myForm):
 	""" File names are determined the time scope requested (singleday,daterange,pastyears) and the querytype."""
+	ext = ".svg"
+
 	if "singleday" in myForm:
-		return "singleday-"+myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value
+		return "singleday-"+myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value+ext 
 	elif "daterange" in myForm:
-		return "daterange-"+myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["startmonth"].value+"-"+myForm["startday"]+"-through-"+myForm["endyear"].value+"-"+myForm["endmonth"].value+"-"+myForm["endday"].value
+		return "daterange-"+myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["startmonth"].value+"-"+myForm["startday"]+"-through-"+myForm["endyear"].value+"-"+myForm["endmonth"].value+"-"+myForm["endday"].value+ext 
 	elif "pastyears" in myForm:
-		return "pastyears-"+myForm["querytype"].value+"_"+myForm["years"]
+		return "pastyears-"+myForm["querytype"].value+"_"+myForm["years"]+ext 
 
 
 #------------------------------------------------------------------------
@@ -209,17 +212,17 @@ insertQueryMenu()
 if form == None:
 	print "</body></html>"
 elif "singleday" in form:
-	tuples = get_daily_field_values(form["day"].value,
+	
+	soughtGraph = makeFilename(form) 
+	if graphCached(soughtGraph):
+		print "<p><img src='"+config.IMAGERESULTPATH+soughtGraph+"'/></p>"
+	else:
+		tuples = get_daily_field_values(form["day"].value,
 			       form["month"].value,
 			       form["year"].value,
 			       form["querytype"].value)
-	graph_result(tuples, makeFilename(form))
-
-	soughtGraph = "images/" + form["month"].value + "_" + form["startyear"].value + ".png"
-	if graphCached(soughtGraph):
-		print "<p><img src='" + soughtGraph + "'/></p>"
-	else:
-		print "<p>We'll need to generate the", soughtGraph,"graph.</p>"
+		graph_result(tuples, config.IMAGERESULTPATH + soughtGraph)
+		print "<p><img src='"+config.IMAGERESULTPATH+soughtGraph+"'/></p>"
         print "</body></html>"
 else:
 	print "</body></html>"
