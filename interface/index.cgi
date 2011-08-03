@@ -5,6 +5,7 @@ import cgitb
 from os import path
 from cgiutils import * # Comes with dbutils
 import htmlGen as h
+from geodb import *
 
 cgitb.enable()  # Enabling traceback to display in the browser.
 #cgitb.enable(display=0, logdir="/tmp")   # Use this for more privacy.
@@ -59,15 +60,22 @@ def printDayOptions():
 		print '<option value="%s">%s</option>' %(day,day)
 
 def printYearOptions():
-	for yr in range(1989,2012,1):
+	"""This prints <options> for years of data available. 
+	Changes based on data availability in database."""
+	startyear = earliestData().split("-")[0] # Date is returned as string
+	endyear = latestData().split("-")[0]
+
+	for yr in range(int(startyear),int(endyear),1):
 		print '<option value="%s">%s</option>' %(yr,yr)
 
 def printYearRanges():
-	#This should change based on availability in database.
-	for yr in range(1,15):
+	"""This prints <options> for number of years of data available. 
+	Changes based on data availability in database."""
+	for yr in range(1,yearsOfData()+1):
 		print '<option value="%s">%s</option>' %(yr,yr)
 
 def printDataOptions():
+	"""Prints radio buttons for data types given in a global dictionary."""
 	for key,val in datatypeDict.items():
 		print h.inputRadioButton("querytype",key) + val + '<br/>'
 
