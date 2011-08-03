@@ -5,6 +5,10 @@ Analysis of weather data from satellite and ground sources.
 Goal: Generate contoured maps of the data plotted by geographical location.
 """
 
+import os
+os.environ['HOME'] = '/tmp/' # To allow Matplotlib to run under cgi
+os.environ['MPLCONFIGDIR'] = '/tmp/' 
+
 import config, psycopg2, sys, getopt
 from dbutils import *
 from scipy.interpolate import griddata
