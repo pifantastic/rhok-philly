@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Keep shared database code here
+# Keep database code that would be shared between projects here
 
 import config,psycopg2
 
