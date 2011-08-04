@@ -137,7 +137,7 @@ def graph_result(result_tuples,filename):
   #plt.title('Maximum Temperatures For Month')
   plt.xlabel("Longitude")
   plt.ylabel("Latitude")
-  plt.savefig(filename+'.svg',dpi=150)
+  plt.savefig(filename,dpi=150)
 
 if __name__ == "__main__":
   
