@@ -8,6 +8,7 @@ from cgiutils import * # Comes with dbutils
 import htmlGen as h
 from geodb import *
 import config
+import csv
 
 #os.environ['HOME'] = '/tmp/' # To allow Matplotlib to run under cgi
 #os.environ['MPLCONFIGDIR'] = '/tmp/' 
@@ -189,14 +190,13 @@ def graphCached(graphPath):
 
 def makeFilename(myForm):
 	""" File names are determined the time scope requested (singleday,daterange,pastyears) and the querytype."""
-	ext = ".png"
 
 	if "singleday" in myForm:
-		return "singleday-"+myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value+ext 
+		return "singleday-"+myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value 
 	elif "daterange" in myForm:
-		return "daterange-"+myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["startmonth"].value+"-"+myForm["startday"]+"-through-"+myForm["endyear"].value+"-"+myForm["endmonth"].value+"-"+myForm["endday"].value+ext 
+		return "daterange-"+myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["startmonth"].value+"-"+myForm["startday"]+"-through-"+myForm["endyear"].value+"-"+myForm["endmonth"].value+"-"+myForm["endday"].value 
 	elif "pastyears" in myForm:
-		return "pastyears-"+myForm["querytype"].value+"_"+myForm["years"]+ext 
+		return "pastyears-"+myForm["querytype"].value+"_"+myForm["years"] 
 
 
 #------------------------------------------------------------------------
@@ -221,8 +221,16 @@ elif "singleday" in form:
 			       form["month"].value,
 			       form["year"].value,
 			       form["querytype"].value)
-		graph_result(tuples, config.IMAGERESULTPATH + soughtGraph)
-		print "<p><img src='"+config.IMAGERESULTPATH+soughtGraph+"'/></p>"
+		graph_result(tuples, config.IMAGERESULTPATH + soughtGraph + config.EXT)
+		print '<p><br/><img src="'+config.IMAGERESULTPATH+soughtGraph+config.EXT+'"/></p>'
+		exporter = csv.writer(open(config.DATAEXPORTPATH+soughtGraph+'.csv','w'), delimiter=',')
+		exporter.writerow(["latitude","longitude","value"])
+		for entry in tuples:
+			exporter.writerow(list(entry))
+
+		print '<p>Download the data set as a csv: ',
+		print '<a href="'+config.DATAEXPORTPATH+soughtGraph+'.csv">',
+		print soughtGraph+'</a></p>'
         print "</body></html>"
 else:
 	print "</body></html>"
