@@ -11,3 +11,8 @@ GROUNDDATAPATH = '/home/myaccount/rhok2011/data/'
 
 IMAGERESULTPATH = 'images/'
 DATAEXPORTPATH = 'export/'
+
+# The extension for the graph output. 
+# This should be .png for testing, or .svg for conversion to .kml.
+# Other options should also work.
+EXT = '.png' 
