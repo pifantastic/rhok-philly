@@ -189,7 +189,7 @@ def graphCached(graphPath):
 
 def makeFilename(myForm):
 	""" File names are determined the time scope requested (singleday,daterange,pastyears) and the querytype."""
-	ext = ".svg"
+	ext = ".png"
 
 	if "singleday" in myForm:
 		return "singleday-"+myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value+ext 
