@@ -178,14 +178,24 @@ def insertAvailabilityNote():
 	enddate = latestData()
 	print '<p>Information is available from %s to %s.</p>' % (startdate, enddate)
 
+def insertImageAndDataLink(filename):
+	print "<p><img src='"+config.IMAGERESULTPATH+filename+config.EXT+"'/>"
+	print '<br/>Download the data set as a csv: ',
+	print '<a href="'+config.DATAEXPORTPATH+filename+'.csv">',
+	print filename+'.csv</a></p>'
+
+
+
 #------------------------------------------------------------------------
 # Functions for storing, finding, refreshing, converting graph output
 #------------------------------------------------------------------------
 
-def graphCached(graphPath):
+def graphCached(filename):
 	"""	This returns a boolean value after we figure out 
-	whether we already have a graph of the requested data."""
-	if path.isfile(graphPath): return True
+	whether we already have a graph and csv of the requested data."""
+	if (path.isfile(config.IMAGERESULTPATH+filename+config.EXT) and 
+	    path.isfile(config.DATAEXPORTPATH+filename+'.csv')): 
+		return True
 	else: return False
 
 def makeFilename(myForm):
@@ -213,9 +223,9 @@ if form == None:
 	print "</body></html>"
 elif "singleday" in form:
 	
-	soughtGraph = makeFilename(form) 
-	if graphCached(soughtGraph):
-		print "<p><img src='"+config.IMAGERESULTPATH+soughtGraph+"'/></p>"
+	soughtGraph = makeFilename(form) # Filename without extension.
+	if graphCached(soughtGraph+config.EXT):
+		insertImageAndDataLink(soughtGraph)
 	else:
 		tuples = get_daily_field_values(form["day"].value,
 			       form["month"].value,
