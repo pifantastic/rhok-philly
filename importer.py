@@ -15,13 +15,14 @@ Synopsis: import.py
 	Requires Python 2.7
 """
 
+from geodb import *
 import os, sys, urllib, urllib2, getopt, psycopg2, csv, datetime, config, glob, subprocess
 from dbutils import *
 if sys.version < '2.7':
   print "Requires Python 2.7! You have ", sys.version
   sys.exit(8)
 
-VERSION = '0.1'
+VERSION = '0.9'
 IMPORT_SAT = False
 IMPORT_GROUND = False
 CREATE_DB = False
@@ -55,7 +56,7 @@ def fetch_nasa_data(lat=10, lng=10):
   request = urllib2.Request(NASA_URL, urllib.urlencode(params))
   response = urllib2.urlopen(request)
   lines = response.read().strip().split("\n")
-  
+  conn = opendb() 
   cur = conn.cursor()
 
   locid = sat_getlocid(lat,lng)
@@ -112,7 +113,97 @@ def insert_ground_loc_csv(csv_path):
 def parse_ground_dbf(dbf_path):
   return subprocess.check_output(["dbfxtrct", "-i%s" %(dbf_path)]).split()
 
+def import_ground_dbf(dbfile):
+	print "DBF Parser Parsing file " + dbfile
+	tempmax_fieldid = get_fieldid_for_field("tempmax")
+	tempmin_fieldid = get_fieldid_for_field("tempmin")
+	rain_fieldid    = get_fieldid_for_field("rain")
+	# First we must correct for a numbering oddity (probably)
+	stationid = int(dbfile.split("_")[-1].split(".")[0]) + 100
+	locid = get_locid_from_stationid(str(stationid))
+	if(locid == None):
+		print "No station location with station id " + stationid
+	else:
+		if(dbfile.startswith("TMP_")): # Temperature data
+			dbf_string_lines = parse_ground_dbf(dbfile)
+			for j in range (len(dbf_string_lines)):
+				datalist = dbf_string_lines[j].split(",")
+				tsid = get_geotsid(datalist[0], locid)
+				set_geodata_by_fieldid(tsid, tempmax_fieldid, datalist[1])
+				set_geodata_by_fieldid(tsid, tempmin_fieldid, datalist[2])
+
+		elif(dbfile.startswith("PCP_")): # Precipitation data
+			dbf_string_lines = parse_ground_dbf(dbfile)
+			for j in range (len(dbf_string_lines)):
+				datalist = dbf_string_lines[j].split(",")
+				tsid = get_geotsid(datalist[0], locid)
+				set_geodata_by_fieldid(tsid, rain_fieldid, datalist[1])
+		else:
+			print "Ignoring file " + dbfile
+
+def import_csv_data(sep, fname, loctype):
+	print "CSV parser parsing file " + fname
+	tempmax_fieldid = get_fieldid_for_field("tempmax")
+	tempmin_fieldid = get_fieldid_for_field("tempmin")
+	rain_fieldid    = get_fieldid_for_field("rain")
+	stationid = int(fname.split("_")[-1].split(".")[0]) + 100
+	locid = get_locid_from_stationid(str(stationid))
+	if(locid == None):
+		print "No station location with station id " + stationid
+	else:
+		if(fname.startswith("TMP_")): # Temperature data
+			reader = csv.DictReader(fname) # We require fields (and header): date,tempmax,tempmin
+			for row in reader:
+				tsid = get_geotsid(row["date"], locid)
+				set_geodata_by_fieldid(tsid, tempmax_fieldid, row["tempmax"])
+				set_geodata_by_fieldid(tsid, tempmin_fieldid, row["tempmin"])
+		elif(fname.startswith("PCP_")): # Precipitation data
+			reader = csv.DictReader(fname) # We require fields (and header): date, rain
+			for row in reader:
+				tsid = get_geotsid(row["date"], locid)
+				set_geodata_by_fieldid(tsid, rain_fieldid, row["rain"])
+		else:
+			print "Ignoring file " + fname
+
+# import xlrd
+# Note that this is CC-BY-NC, and may have license implications!
+
+def import_ground_xls(fname):
+	print "XLS parser parsing file " + fname
+	tempmax_fieldid = get_fieldid_for_field("tempmax")
+	tempmin_fieldid = get_fieldid_for_field("tempmin")
+	rain_fieldid    = get_fieldid_for_field("rain")
+	stationid = int(fname.split("_")[-1].split(".")[0]) + 100
+	locid = get_locid_from_stationid(str(stationid))
+	if(locid == None):
+		print "No station location with station id " + stationid
+	else:
+		if(fname.startswith("TMP_")): # Temperature data
+			xlrd.open_workbook(fname)
+		elif(fname.startswith("PCP_")): # Precipitation data
+			wb = xlrd.open_workbook(fname)
+			sheet = wb.sheets()[0]
+			# FIXME - NOT Done. How will these things be formatted?
+		else:
+			print "Ignoring file " + fname
+
+
 def insert_ground_data():
+	temperature_files = glob.glob(config.GROUNDDATAPATH + "TMP_*.dbf")
+	temperature_files.sort()
+	for filename in temperature_files:
+		import_ground_dbf(dbfile)
+	precip_files = glob.glob(config.GROUNDDATAPATH + "PCP_*.dbf")
+	precip_files.sort()
+	for filename in precip_files:
+		import_ground_dbf(dbfile)
+	
+
+'''
+def OLD_insert_ground_data():
+  # Split the file-specific code off into import_ground_dbf() so other code
+  # can call that.
+
   temperature_files = glob.glob(config.GROUNDDATAPATH + "TMP_*.dbf")
   temperature_files.sort()
   dbconn = opendb()
@@ -182,68 +273,7 @@ def insert_ground_data():
         #    "INSERT INTO geodata(locid,date,rain) VALUES (%s,%s,%s);",\
         #    (file_locid,datalist[0],datalist[1]))
 	#dbconn.commit()    
-
-###################################################
-# Database Functions
-#
-# Consider moving these to dbutils.py, as they might be
-# used in both the analysis and import scripts.
-###################################################
-
-def set_geodata_by_fieldid(geotsid, fieldid, value):
-  cur = conn.cursor()
-  cur.execute("SELECT geovalueid FROM geovalue WHERE geotsid=%s AND geofieldid=%s;", (geotsid, fieldid)) # Does this data exist?
-  exists = cur.rowcount
-  if(exists == 0):
-    cur.execute("INSERT INTO geovalue (geotsid, geofieldid, geoval) VALUES (%s, %s, %s);", (geotsid,fieldid,value))
-  else:
-    cur.execute("UPDATE geovalue SET geoval=%s WHERE geotsid=%s AND geofieldid=%s;", (value, geotsid, fieldid))
-  conn.commit()
-
-#def get_fieldid_for_field(fieldname):
-#  cur = conn.cursor()
-#  cur.execute("SELECT fieldid FROM geofield WHERE fieldname=%s;", (fieldname,))
-#  returner = cur.fetchone()[0] # TODO Handle if we don't get one! Make a new one?
-#  return returner 
-
-def get_geotsid(date, locid):
-  cur = conn.cursor()
-  cur.execute("SELECT geotsid FROM geotimespace WHERE date=%s AND locid=%s;", (date, locid))
-  shouldbeone = cur.rowcount
-  if(shouldbeone == 1):
-    returner = cur.fetchone()[0]
-    return returner
-  else: # We didn't get a geotsid, so let's make one
-    cur.execute("INSERT INTO geotimespace(date,locid) VALUES (%s, %s) RETURNING geotsid;", (date, locid))
-    conn.commit()
-    returner = cur.fetchone()[0]
-    return returner
-
-def sat_getlocid(lat, lng):
-  cur = conn.cursor()
-  cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'sat';", (lat, lng))
-  shouldbeone = cur.fetchone()
-  if(shouldbeone > 0):
-    returner = cur.fetchone()[0]
-    return returner
-  else:
-    cur.execute("INSERT INTO location (sourceid, lat, lng) VALUES ('sat', %s, %s) RETURNING locid;", (lat, lng))
-    conn.commit()
-    locid = cur.fetchone()[0]
-    return locid
-
-def station_ensure_locid(lat, lng, stationid, locname):
-  cur = conn.cursor()
-  cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'ground';", (lat, lng))
-  shouldbeone = cur.fetchone()
-  if(shouldbeone > 0):
-    returner = cur.fetchone()[0]
-    return returner
-  else:
-    cur.execute("INSERT INTO location(sourceid, lat, lng, stationid, locname) VALUES (%s, %s, %s, %s, %s) RETURNING locid;", ("ground", lat, lng, stationid, locname))
-    conn.commit()
-    returner = cur.fetchone()[0]
-    return returner
+'''
 
 ###################################################
 # main()
@@ -269,7 +299,6 @@ if __name__ == "__main__":
   if CREATE_DB:
     os.system("createdb %s" % (config.DBNAME))
     os.system("psql -d %s -f %s" % (config.DBNAME, 'schema.sql')) # Must be in the current dir :(
-  conn = opendb()
 
   if IMPORT_SAT:
     reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',')

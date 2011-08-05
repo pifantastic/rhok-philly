@@ -60,4 +60,61 @@ def latestCompleteData(datatype):
 	curs.execute("SELECT satdates FROM (SELECT DISTINCT date_part('year',date) FROM geotimespace NATURAL JOIN location WHERE location.sourceid='sat') AS satdates JOIN (SELECT DISTINCT date_part('year',date)  FROM geotimespace NATURAL JOIN location WHERE location.sourceid='ground') AS gnddates ON satdates = gnddates ORDER BY satdates DESC LIMIT 1;")
 	return curs.fetchone()[0]
 
+##########################
+# From import.py, with love
+
+def get_locid_from_stationid(stationid):
+	''' Given a string stationid, return the locationid '''
+	conn = opendb()
+	curs = conn.cursor()
+	cur.execute("SELECT locid FROM location WHERE stationid = %s;", (str(source_num),))
+	return curs.fetchone()[0]
+
+def set_geodata_by_fieldid(geotsid, fieldid, value):
+	conn = opendb()
+	cur = conn.cursor()
+	cur.execute("SELECT geovalueid FROM geovalue WHERE geotsid=%s AND geofieldid=%s;", (geotsid, fieldid)) # Does this data exist?
+	exists = cur.rowcount
+	if(exists == 0):
+		cur.execute("INSERT INTO geovalue (geotsid, geofieldid, geoval) VALUES (%s, %s, %s);", (geotsid,fieldid,value))
+	else:
+		cur.execute("UPDATE geovalue SET geoval=%s WHERE geotsid=%s AND geofieldid=%s;", (value, geotsid, fieldid))
+	conn.commit()
+
+def get_geotsid(date, locid):
+	conn = opendb()
+	cur = conn.cursor()
+	cur.execute("SELECT geotsid FROM geotimespace WHERE date=%s AND locid=%s;", (date, locid))
+	shouldbeone = cur.rowcount
+	if(shouldbeone == 1):
+		return cur.fetchone()[0]
+	else: # We didn't get a geotsid, so let's make one
+		cur.execute("INSERT INTO geotimespace(date,locid) VALUES (%s, %s) RETURNING geotsid;", (date, locid))
+		conn.commit()
+		return cur.fetchone()[0]
+
+def sat_getlocid(lat, lng):
+	conn = opendb()
+	cur = conn.cursor()
+	cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'sat';", (lat, lng))
+	shouldbeone = cur.fetchone()
+	if(shouldbeone > 0):
+		return cur.fetchone()[0]
+	else:
+		cur.execute("INSERT INTO location (sourceid, lat, lng) VALUES ('sat', %s, %s) RETURNING locid;", (lat, lng))
+		conn.commit()
+		return cur.fetchone()[0]
+
+def station_ensure_locid(lat, lng, stationid, locname):
+	conn = opendb()
+	cur = conn.cursor()
+	cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'ground';", (lat, lng))
+	shouldbeone = cur.fetchone()
+	if(shouldbeone > 0):
+		returner = cur.fetchone()[0]
+		return returner
+	else:
+		cur.execute("INSERT INTO location(sourceid, lat, lng, stationid, locname) VALUES (%s, %s, %s, %s, %s) RETURNING locid;", ("ground", lat, lng, stationid, locname))
+		conn.commit()
+		return cur.fetchone()[0]
 
