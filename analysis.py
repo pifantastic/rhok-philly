@@ -78,7 +78,7 @@ def get_field_sums_for_timespan(fieldname, qtype, startday, startmonth, startyea
 	dbconn = opendb()
 	curs = dbconn.cursor()
 	fieldid = get_fieldid_for_field(fieldname)
-	curs.execute("SELECT lat,lng,SUM(geoval) FROM geovalue NATURAL JOIN geotimespace NATURAL JOIN location WHERE geofieldid=%s AND date >= %s AND date <= %s GROUP BY lat,lng;", (2, startdate, enddate))
+	curs.execute("SELECT lat,lng,SUM(geoval) FROM geovalue NATURAL JOIN geotimespace NATURAL JOIN location WHERE geofieldid=%s AND date >= %s AND date <= %s AND sourceid=%s GROUP BY lat,lng;", (2, startdate, enddate, qtype))
 	return curs.fetchall()
 
 def get_field_averages_for_timespan(fieldname, qtype, startday, startmonth, startyear, endday, endmonth, endyear):
@@ -87,7 +87,7 @@ def get_field_averages_for_timespan(fieldname, qtype, startday, startmonth, star
 	dbconn = opendb()
 	curs = dbconn.cursor()
 	fieldid = get_fieldid_for_field(fieldname)
-	curs.execute("SELECT lat,lng,AVG(geoval) FROM geovalue NATURAL JOIN geotimespace NATURAL JOIN location WHERE geofieldid=%s AND date >= %s AND date <= %s GROUP BY lat,lng;", (2, startdate, enddate))
+	curs.execute("SELECT lat,lng,AVG(geoval) FROM geovalue NATURAL JOIN geotimespace NATURAL JOIN location WHERE geofieldid=%s AND date >= %s AND date <= %s AND sourceid=%s GROUP BY lat,lng;", (2, startdate, enddate, qtype))
 	return curs.fetchall()
 
 
