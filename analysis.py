@@ -30,7 +30,7 @@ def get_daily_field_values(day,month,year,fieldname, qtype):
 
   fieldid = get_fieldid_for_field(fieldname)
   datefield = psycopg2.Date(int(year),int(month),int(day))
-  curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s AND sourceid='%s'", (datefield,fieldid, qtype)) 
+  curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s AND sourceid=%s", (datefield,fieldid, qtype)) 
   return curs.fetchall()
 
 def get_monthly_field_averages(fieldname):
