@@ -76,6 +76,7 @@ def printYearRanges():
 
 def printDataOptions():
 	"""Prints radio buttons for data types given in a global dictionary."""
+	print 'Select a type of data to retrieve:'
 	for key,val in datatypeDict.items():
 		print h.inputRadioButton("querytype",key) + val + '<br/>'
 
@@ -156,6 +157,7 @@ def dataForm():
 	print '<p>'
 	singleDayFormContents()
 	print h.inputSubmit("singleday","get data")
+	print '</p>'
 
 	# Last N years
 	print '<p>'
@@ -221,8 +223,11 @@ insertQueryMenu()
 
 if form == None:
 	print "</body></html>"
+
+elif "querytype" not in form:
+	print '<div class="error"><p>Error: Don\'t forget to select a type of data.</p></div>'
+	print '</body></html>'
 elif "singleday" in form:
-	
 	soughtGraph = makeFilename(form) # Filename without extension.
 	if graphCached(soughtGraph+config.EXT):
 		insertImageAndDataLink(soughtGraph)
