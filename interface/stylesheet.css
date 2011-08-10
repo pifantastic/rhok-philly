@@ -5,8 +5,11 @@
 }
 
 .formblock{
-    float:left;
     background-color:#b0c4de;
-    padding:15px;
+    padding:35px;
     margin:10px;
+}
+
+.error{
+    color: #CC0000;
 }
