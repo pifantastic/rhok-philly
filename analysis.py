@@ -21,16 +21,16 @@ def usage(exit_code=0):
   print __doc__ % globals()
   sys.exit(exit_code)
 
-def get_daily_field_values(day,month,year,fieldname):
-  ''' Get data for a specified field for a specific day. 
+def get_daily_field_values(day,month,year,fieldname, qtype):
+  ''' Get data for a specified field for a specific day.
+      qtype is 'sat' or 'ground' 
       Returned tuples will be lat, long, and value for that field.'''
   dbconn = opendb()
   curs = dbconn.cursor()
 
   fieldid = get_fieldid_for_field(fieldname)
   datefield = psycopg2.Date(int(year),int(month),int(day))
-  curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s", (datefield,fieldid)) 
-  # Could return geotimespace.locid if need be, but not right now.
+  curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s AND sourceid=%s", (datefield,fieldid, qtype)) 
   return curs.fetchall()
 
 def get_monthly_field_averages(fieldname):
@@ -71,6 +71,25 @@ def get_month_field_averages(month,qtype,fieldname):
     "GROUP BY EXTRACT(month FROM geotimespace.date),locid ORDER BY locid,monthtime) "+\
     "AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=%s", (fieldid,qtype,month))
   return curs.fetchall()
+
+def get_field_sums_for_timespan(fieldname, qtype, startday, startmonth, startyear, endday, endmonth, endyear):
+	startdate = psycopg2.Date(int(startyear), int(startmonth), int(startday))
+	enddate = psycopg2.Date(int(endyear), int(endmonth), int(endday))
+	dbconn = opendb()
+	curs = dbconn.cursor()
+	fieldid = get_fieldid_for_field(fieldname)
+	curs.execute("SELECT lat,lng,SUM(geoval) FROM geovalue NATURAL JOIN geotimespace NATURAL JOIN location WHERE geofieldid=%s AND date >= %s AND date <= %s AND sourceid=%s GROUP BY lat,lng;", (2, startdate, enddate, qtype))
+	return curs.fetchall()
+
+def get_field_averages_for_timespan(fieldname, qtype, startday, startmonth, startyear, endday, endmonth, endyear):
+	startdate = psycopg2.Date(int(startyear), int(startmonth), int(startday))
+	enddate = psycopg2.Date(int(endyear), int(endmonth), int(endday))
+	dbconn = opendb()
+	curs = dbconn.cursor()
+	fieldid = get_fieldid_for_field(fieldname)
+	curs.execute("SELECT lat,lng,AVG(geoval) FROM geovalue NATURAL JOIN geotimespace NATURAL JOIN location WHERE geofieldid=%s AND date >= %s AND date <= %s AND sourceid=%s GROUP BY lat,lng;", (2, startdate, enddate, qtype))
+	return curs.fetchall()
+
 
 def get_monthly_tempmax_averages():
   return get_monthly_field_averages("tempmax")

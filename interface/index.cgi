@@ -76,7 +76,11 @@ def printYearRanges():
 
 def printDataOptions():
 	"""Prints radio buttons for data types given in a global dictionary."""
+<<<<<<< HEAD
 	print 'Select a type of data to retrieve:'
+=======
+	print 'Select a type of data to retrieve:<br/>'
+>>>>>>> 52c910ee9e832b2d9db8b5620ae2773e4d8e80f1
 	for key,val in datatypeDict.items():
 		print h.inputRadioButton("querytype",key) + val + '<br/>'
 

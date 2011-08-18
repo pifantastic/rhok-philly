@@ -5,6 +5,8 @@
 figures out the right way to shove it into the database. '''
 
 from string import *
+from importer import *
+from geodb import *
 
 def db_import_file(source, thisfile):
 	''' The main entry point into this software component. For a named source,
@@ -44,7 +46,7 @@ def die(message, returncode=1):
 	exit(returncode)
 
 ######################################
-# Import handlers
+# Import handlers - loctype is "sat" or "ground"
 
 def handle_delimited_input(sep, fname, loctype):
 	'''
@@ -53,13 +55,25 @@ def handle_delimited_input(sep, fname, loctype):
 	Assumes the first row has fieldnames.
 	If the separator is ' ', split on any whitespace.
 	'''
-def handle_dbase_input(fname, loctype): # This is best-effort
+	if(loctype == "ground"):
+		import_csv_data(sep, fname, loctype)
+	else:
+		die("Sky data in CSV format is not yet supported.")
+
+def handle_dbase_input(fname, loctype):
 	'''
 	Input handler for dbase files.
 	'''
+	if(loctype == "ground"):
+		import_ground_dbf(fname)
+	else:
+		die("Sky data in DBF format is not yet supported.")
 
 def handle_excel_input(fname, loctype): # This is best-effort
 	'''
 	Input handler for excel files. Will not work with the new "open" "XML" files.
 	'''
-
+	if(loctype == "ground"):
+		import_ground_xls(fname)
+	else:
+		die("Sky data in XLS format is not yet supported.")
