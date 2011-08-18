@@ -58,13 +58,15 @@ def get_month_field_averages(month,qtype,fieldname):
       month = numeric (1-12), what month you want
       qtype = 'sat' or 'ground'
       fieldname
+  Get average named field value for given month. 
+  Returned tuples will be lat, long, location id, month number, 
+  and average value for that field
   """
 
   dbconn = opendb()
   curs = dbconn.cursor()
   fieldid = get_fieldid_for_field(fieldname)
-  # Get average named field value(from 2 years of data) for given month. 
-  # Tuples will be lat, long, location id, month number, and average value for that field
+  
   curs.execute("SELECT lat,lng,avggeoval FROM "+\
     "(SELECT locid,EXTRACT(month FROM geotimespace.date) "+\
     "AS monthtime,AVG(geoval) AS avggeoval FROM geotimespace "+\
