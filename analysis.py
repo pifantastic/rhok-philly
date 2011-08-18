@@ -21,23 +21,25 @@ def usage(exit_code=0):
   print __doc__ % globals()
   sys.exit(exit_code)
 
-def get_daily_field_values(day,month,year,fieldname, qtype):
-  ''' Get data for a specified field for a specific day.
-      qtype is 'sat' or 'ground' 
-      Returned tuples will be lat, long, and value for that field.'''
+def get_daily_field_values(day,month,year,fieldname):
+  """ Get data for a specified field for a specific day. 
+      Returned tuples will be lat, long, and value for that field."""
   dbconn = opendb()
   curs = dbconn.cursor()
 
   fieldid = get_fieldid_for_field(fieldname)
   datefield = psycopg2.Date(int(year),int(month),int(day))
-  curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s AND sourceid=%s", (datefield,fieldid, qtype)) 
+  curs.execute("SELECT lat,lng,geoval FROM geotimespace JOIN location ON geotimespace.locid=location.locid JOIN geovalue ON geotimespace.geotsid = geovalue.geotsid WHERE date=%s AND geofieldid=%s", (datefield,fieldid)) 
+  # Could return geotimespace.locid if need be, but not right now.
   return curs.fetchall()
 
 def get_monthly_field_averages(fieldname):
+  """ Get average named field value (from 2 years of data) for every month. 
+  Tuples will be lat, long, location id, month number, and average.
+  """
   dbconn = opendb()
   curs = dbconn.cursor()
-  # Get average named field value (from 2 years of data) for every month. 
-  # Tuples will be lat, long, location id, month number, and average for that field
+  
   fieldid = get_fieldid_for_field(fieldname)
 
   curs.execute("SELECT lat,lng,myquery.locid,monthtime,avggeoval FROM " +\
@@ -72,25 +74,6 @@ def get_month_field_averages(month,qtype,fieldname):
     "AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=%s", (fieldid,qtype,month))
   return curs.fetchall()
 
-def get_field_sums_for_timespan(fieldname, qtype, startday, startmonth, startyear, endday, endmonth, endyear):
-	startdate = psycopg2.Date(int(startyear), int(startmonth), int(startday))
-	enddate = psycopg2.Date(int(endyear), int(endmonth), int(endday))
-	dbconn = opendb()
-	curs = dbconn.cursor()
-	fieldid = get_fieldid_for_field(fieldname)
-	curs.execute("SELECT lat,lng,SUM(geoval) FROM geovalue NATURAL JOIN geotimespace NATURAL JOIN location WHERE geofieldid=%s AND date >= %s AND date <= %s AND sourceid=%s GROUP BY lat,lng;", (2, startdate, enddate, qtype))
-	return curs.fetchall()
-
-def get_field_averages_for_timespan(fieldname, qtype, startday, startmonth, startyear, endday, endmonth, endyear):
-	startdate = psycopg2.Date(int(startyear), int(startmonth), int(startday))
-	enddate = psycopg2.Date(int(endyear), int(endmonth), int(endday))
-	dbconn = opendb()
-	curs = dbconn.cursor()
-	fieldid = get_fieldid_for_field(fieldname)
-	curs.execute("SELECT lat,lng,AVG(geoval) FROM geovalue NATURAL JOIN geotimespace NATURAL JOIN location WHERE geofieldid=%s AND date >= %s AND date <= %s AND sourceid=%s GROUP BY lat,lng;", (2, startdate, enddate, qtype))
-	return curs.fetchall()
-
-
 def get_monthly_tempmax_averages():
   return get_monthly_field_averages("tempmax")
   #dbconn = opendb()
@@ -106,17 +89,19 @@ def get_monthly_tempmax_averages():
   #return curs.fetchall()
 
 def get_month_tempmax_averages(month,qtype):
+  """ Inputs:
+  month = numeric (1-12), what month you want
+  qtype = 'sat' or 'ground'
+  Returns a list of tuples. 
+  Tuples will be lat, long, location id, month number, 
+  and average (maximum) temperature 
+  """
   return get_month_field_averages(month,qtype,"tempmax")
-  #"""
-  #Inputs:
-  #month = numeric (1-12), what month you want
-  #qtype = 'sat' or 'ground'
-
-  #"""
+  
   #dbconn = opendb()
   #curs = dbconn.cursor()
   # Get average maximum temperature (from 2 years of data) for given month. 
-  # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
+  # 
   #curs.execute("SELECT lat,lng,avgtmpmax FROM "+\
   #  "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
   #  "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
@@ -127,7 +112,9 @@ def get_month_tempmax_averages(month,qtype):
     
 
 def graph_result(result_tuples,filename):
-  """ Tuples will be lat, long, and the desired data. 
+  """ 
+  Arguments: A list of tuples, a filename
+  Tuples need to be lat, long, and the desired data. 
   We need the filename to save the figure in. """
   lats, longs, temps = zip(*result_tuples)
   
