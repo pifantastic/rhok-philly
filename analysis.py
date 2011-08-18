@@ -76,17 +76,7 @@ def get_month_field_averages(month,qtype,fieldname):
 
 def get_monthly_tempmax_averages():
   return get_monthly_field_averages("tempmax")
-  #dbconn = opendb()
-  #curs = dbconn.cursor()
-  # Get average maximum temperature (from 2 years of data) for every month. 
-  # Tuples will be lat, long, location id, month number, and average (maximum) temperature 
-  #curs.execute("SELECT lat,lng,myquery.locid,monthtime,avgtmpmax FROM "+\
-  #  "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
-  #  "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
-  #  "WHERE locid IN (SELECT locid FROM location WHERE sourceid='ground') "+\
-  #  "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
-  #  "AS myquery JOIN location ON location.locid=myquery.locid;")
-  #return curs.fetchall()
+ 
 
 def get_month_tempmax_averages(month,qtype):
   """ Inputs:
@@ -97,20 +87,7 @@ def get_month_tempmax_averages(month,qtype):
   and average (maximum) temperature 
   """
   return get_month_field_averages(month,qtype,"tempmax")
-  
-  #dbconn = opendb()
-  #curs = dbconn.cursor()
-  # Get average maximum temperature (from 2 years of data) for given month. 
-  # 
-  #curs.execute("SELECT lat,lng,avgtmpmax FROM "+\
-  #  "(SELECT locid,EXTRACT(month FROM geodata.date) "+\
-  #  "AS monthtime,AVG(tempmax) AS avgtmpmax FROM geodata "+\
-  #  "WHERE locid IN (SELECT locid FROM location WHERE sourceid=%s) "+\
-  #  "GROUP BY EXTRACT(month FROM geodata.date),locid ORDER BY locid,monthtime) "+\
-  #  "AS myquery JOIN location ON location.locid=myquery.locid AND monthtime=%s", (qtype,month))
-  #return curs.fetchall()
-    
-
+ 
 def graph_result(result_tuples,filename):
   """ 
   Arguments: A list of tuples, a filename
