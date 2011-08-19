@@ -71,6 +71,7 @@ def get_locid_from_stationid(stationid):
 	return curs.fetchone()[0]
 
 def set_geodata_by_fieldid(geotsid, fieldid, value):
+	"""Arguments: geotsid, fieldid, value of data to insert or update."""
 	conn = opendb()
 	cur = conn.cursor()
 	cur.execute("SELECT geovalueid FROM geovalue WHERE geotsid=%s AND geofieldid=%s;", (geotsid, fieldid)) # Does this data exist?
@@ -82,6 +83,11 @@ def set_geodata_by_fieldid(geotsid, fieldid, value):
 	conn.commit()
 
 def get_geotsid(date, locid):
+	""" Arguments: date, locid
+	Returns: geotsid, an integer which is the unique identifier for a 
+	location in time and space.
+	If there is not yet a geotsid for the given information, this function
+	generates a new one."""
 	conn = opendb()
 	cur = conn.cursor()
 	cur.execute("SELECT geotsid FROM geotimespace WHERE date=%s AND locid=%s;", (date, locid))
@@ -94,6 +100,7 @@ def get_geotsid(date, locid):
 		return cur.fetchone()[0]
 
 def sat_getlocid(lat, lng):
+	"""Returns locid (an integer) for the given latitude and longitude."""
 	conn = opendb()
 	cur = conn.cursor()
 	cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'sat';", (lat, lng))
@@ -106,13 +113,15 @@ def sat_getlocid(lat, lng):
 		return cur.fetchone()[0]
 
 def station_ensure_locid(lat, lng, stationid, locname):
+	"""Arguments: latitude, logitude, stationid, location name
+	Returns the locid for the given station information, creating a new
+	locid if one does not already exist."""
 	conn = opendb()
 	cur = conn.cursor()
 	cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'ground';", (lat, lng))
 	shouldbeone = cur.fetchone()
-	if(shouldbeone > 0):
-		returner = cur.fetchone()[0]
-		return returner
+	if(shouldbeone not None):
+		return shouldbeone[0]
 	else:
 		cur.execute("INSERT INTO location(sourceid, lat, lng, stationid, locname) VALUES (%s, %s, %s, %s, %s) RETURNING locid;", ("ground", lat, lng, stationid, locname))
 		conn.commit()
