@@ -77,6 +77,16 @@ def get_month_field_averages(month,qtype,fieldname):
   return curs.fetchall()
 
 def get_field_sums_for_timespan(fieldname, qtype, startday, startmonth, startyear, endday, endmonth, endyear):
+  """
+  Arguments: 
+    fieldname (string), qtype ('sat' or 'ground'), 
+    startday, startmonth, startyear,
+    endday, endmonth, endyear
+    
+  Returns a list of tuples.
+  Tuples will be of the form (latitude,longitude,value).
+  The value for each location will be a cumulative total of the values 
+  for that location within the time span."""
   startdate = psycopg2.Date(int(startyear), int(startmonth), int(startday))
   enddate = psycopg2.Date(int(endyear), int(endmonth), int(endday))
   dbconn = opendb()
@@ -86,6 +96,16 @@ def get_field_sums_for_timespan(fieldname, qtype, startday, startmonth, startyea
   return curs.fetchall()
 
 def get_field_averages_for_timespan(fieldname, qtype, startday, startmonth, startyear, endday, endmonth, endyear):
+  """
+  Arguments: 
+    fieldname (string), qtype ('sat' or 'ground'), 
+    startday, startmonth, startyear,
+    endday, endmonth, endyear
+    
+  Returns a list of tuples.
+  Tuples will be of the form (latitude,longitude,value).
+  The value for each location will be an average of the values 
+  for that location within the time span."""
   startdate = psycopg2.Date(int(startyear), int(startmonth), int(startday))
   enddate = psycopg2.Date(int(endyear), int(endmonth), int(endday))
   dbconn = opendb()
