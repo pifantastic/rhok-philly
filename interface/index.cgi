@@ -206,7 +206,7 @@ def makeFilename(myForm):
 	if "singleday" in myForm:
 		return "singleday-"+myForm["querytype"].value+"_"+myForm["year"].value+"-"+myForm["month"].value+"-"+myForm["day"].value 
 	elif "daterange" in myForm:
-		return "daterange-"+myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["startmonth"].value+"-"+myForm["startday"]+"-through-"+myForm["endyear"].value+"-"+myForm["endmonth"].value+"-"+myForm["endday"].value 
+		return "daterange-"+myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["startmonth"].value+"-"+myForm["startday"].value+"-through-"+myForm["endyear"].value+"-"+myForm["endmonth"].value+"-"+myForm["endday"].value 
 	elif "pastyears" in myForm:
 		return "pastyears-"+myForm["querytype"].value+"_"+myForm["years"].value 
 
