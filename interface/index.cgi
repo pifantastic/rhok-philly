@@ -208,7 +208,81 @@ def makeFilename(myForm):
 	elif "daterange" in myForm:
 		return "daterange-"+myForm["querytype"].value+"_"+myForm["startyear"].value+"-"+myForm["startmonth"].value+"-"+myForm["startday"]+"-through-"+myForm["endyear"].value+"-"+myForm["endmonth"].value+"-"+myForm["endday"].value 
 	elif "pastyears" in myForm:
-		return "pastyears-"+myForm["querytype"].value+"_"+myForm["years"] 
+		return "pastyears-"+myForm["querytype"].value+"_"+myForm["years"].value 
+
+def makeNewSumGraphs(myForm,filename,startday,startmonth,startyear,endday,endmonth,endyear):
+	"""If end dates are the same as the start dates, this will return data for one day."""
+	satGraph = filename + '_sat'
+	groundGraph = filename + '_gnd'
+
+	satTuples = get_field_sums_for_timespan(
+		form["querytype"].value,'sat',
+		startday,startmonth,startyear,
+		endday,endmonth,endyear)
+
+	graph_result(satTuples, config.IMAGERESULTPATH + satGraph + config.EXT)
+	print '<p><br/><img src="'+config.IMAGERESULTPATH+satGraph+config.EXT+'"/></p>'
+	exporter = csv.writer(open(config.DATAEXPORTPATH+satGraph+'.csv','w'), delimiter=',')
+	exporter.writerow(["latitude","longitude","value"])
+	for entry in satTuples:
+		exporter.writerow(list(entry))
+
+	print '<p>Download the data set as a csv: ',
+	print '<a href="'+config.DATAEXPORTPATH+satGraph+'.csv">',
+	print satGraph+'</a></p>'
+
+	groundTuples = get_field_sums_for_timespan(
+		form["querytype"].value,'ground',
+		startday,startmonth,startyear,
+		endday,endmonth,endyear)
+	
+	graph_result(groundTuples, config.IMAGERESULTPATH + groundGraph + config.EXT)
+	print '<p><br/><img src="'+config.IMAGERESULTPATH+groundGraph+config.EXT+'"/></p>'
+	exporter = csv.writer(open(config.DATAEXPORTPATH+groundGraph+'.csv','w'), delimiter=',')
+	exporter.writerow(["latitude","longitude","value"])
+	for entry in groundTuples:
+		exporter.writerow(list(entry))
+
+	print '<p>Download the data set as a csv: ',
+	print '<a href="'+config.DATAEXPORTPATH+groundGraph+'.csv">',
+	print groundGraph+'</a></p>'
+
+def makeNewAverageGraphs(myForm,filename,startday,startmonth,startyear,endday,endmonth,endyear):
+	"""If end dates are the same as the start dates, this will return data for one day."""
+	satGraph = filename + '_sat'
+	groundGraph = filename + '_gnd'
+
+	satTuples = get_field_averages_for_timespan(
+		form["querytype"].value,'sat',
+		startday,startmonth,startyear,
+		endday,endmonth,endyear)
+
+	graph_result(satTuples, config.IMAGERESULTPATH + satGraph + config.EXT)
+	print '<p><br/><img src="'+config.IMAGERESULTPATH+satGraph+config.EXT+'"/></p>'
+	exporter = csv.writer(open(config.DATAEXPORTPATH+satGraph+'.csv','w'), delimiter=',')
+	exporter.writerow(["latitude","longitude","value"])
+	for entry in satTuples:
+		exporter.writerow(list(entry))
+
+	print '<p>Download the data set as a csv: ',
+	print '<a href="'+config.DATAEXPORTPATH+satGraph+'.csv">',
+	print satGraph+'</a></p>'
+
+	groundTuples = get_field_averages_for_timespan(
+		form["querytype"].value,'ground',
+		startday,startmonth,startyear,
+		endday,endmonth,endyear)
+
+	graph_result(groundTuples, config.IMAGERESULTPATH + groundGraph + config.EXT)
+	print '<p><br/><img src="'+config.IMAGERESULTPATH+groundGraph+config.EXT+'"/></p>'
+	exporter = csv.writer(open(config.DATAEXPORTPATH+groundGraph+'.csv','w'), delimiter=',')
+	exporter.writerow(["latitude","longitude","value"])
+	for entry in groundTuples:
+		exporter.writerow(list(entry))
+
+	print '<p>Download the data set as a csv: ',
+	print '<a href="'+config.DATAEXPORTPATH+groundGraph+'.csv">',
+	print groundGraph+'</a></p>'
 
 
 #------------------------------------------------------------------------
@@ -235,48 +309,25 @@ elif "singleday" in form:
 		insertImageAndDataLink(satGraph)
 		insertImageAndDataLink(groundGraph)
 	
-	else: #if form["querytype"]=="rain": # We need to sum the data
-		satTuples = get_field_sums_for_timespan(
-			form["querytype"].value,
-			'sat',
-			form["day"].value,
-		       form["month"].value,
-		       form["year"].value,
-			form["day"].value,
-		       form["month"].value,
-		       form["year"].value) # We call the same start and end day for singleday
-
-		graph_result(satTuples, config.IMAGERESULTPATH + satGraph + config.EXT)
-		print '<p><br/><img src="'+config.IMAGERESULTPATH+satGraph+config.EXT+'"/></p>'
-		exporter = csv.writer(open(config.DATAEXPORTPATH+satGraph+'.csv','w'), delimiter=',')
-		exporter.writerow(["latitude","longitude","value"])
-		for entry in satTuples:
-			exporter.writerow(list(entry))
-
-		print '<p>Download the data set as a csv: ',
-		print '<a href="'+config.DATAEXPORTPATH+satGraph+'.csv">',
-		print satGraph+'</a></p>'
-
-		groundTuples = get_field_sums_for_timespan(
-			form["querytype"].value,
-			'ground',
-			form["day"].value,
-		       form["month"].value,
-		       form["year"].value,
-			form["day"].value,
-		       form["month"].value,
-		       form["year"].value) # We call the same start and end day for singleday
-
-		graph_result(groundTuples, config.IMAGERESULTPATH + groundGraph + config.EXT)
-		print '<p><br/><img src="'+config.IMAGERESULTPATH+groundGraph+config.EXT+'"/></p>'
-		exporter = csv.writer(open(config.DATAEXPORTPATH+groundGraph+'.csv','w'), delimiter=',')
-		exporter.writerow(["latitude","longitude","value"])
-		for entry in groundTuples:
-			exporter.writerow(list(entry))
-
-		print '<p>Download the data set as a csv: ',
-		print '<a href="'+config.DATAEXPORTPATH+groundGraph+'.csv">',
-		print groundGraph+'</a></p>'
+	elif form["querytype"].value == "rain": # We need to sum the data
+		makeNewSumGraphs(form,soughtGraph,
+				 form["day"].value,
+				 form["month"].value,
+				 form["year"].value,
+				 form["day"].value,
+				 form["month"].value,
+				 form["year"].value ) 
+		# We call the same start and end day for singleday
+	else: # We need to average the data
+		makeNewAverageGraphs(form,soughtGraph,
+				 form["day"].value,
+				 form["month"].value,
+				 form["year"].value,
+				 form["day"].value,
+				 form["month"].value,
+				 form["year"].value) 
+		# We call the same start and end day for singleday
+	
 
 		"""tuples = get_daily_field_values(form["day"].value,
 			       form["month"].value,
@@ -293,5 +344,65 @@ elif "singleday" in form:
 		print '<a href="'+config.DATAEXPORTPATH+soughtGraph+'.csv">',
 		print soughtGraph+'</a></p>'"""
         print "</body></html>"
+
+elif "daterange" in form:
+	soughtGraph = makeFilename(form) # Filename without extension.
+	satGraph = soughtGraph + '_sat'
+	groundGraph = soughtGraph + '_gnd'
+
+	if graphCached(satGraph+config.EXT) and graphCached(groundGraph+config.EXT):
+		insertImageAndDataLink(satGraph)
+		insertImageAndDataLink(groundGraph)
+	
+	elif form["querytype"].value == "rain": # We need to sum the data
+		makeNewSumGraphs(form,soughtGraph,
+				 form["startday"].value,
+				 form["startmonth"].value,
+				 form["startyear"].value,
+				 form["endday"].value,
+				 form["endmonth"].value,
+				 form["endyear"].value ) 
+
+	else: # We need to average the data
+		makeNewAverageGraphs(form,soughtGraph,
+				 form["startday"].value,
+				 form["startmonth"].value,
+				 form["startyear"].value,
+				 form["endday"].value,
+				 form["endmonth"].value,
+				 form["endyear"].value ) 
+	print "</body></html>"
+
+elif "pastyears" in form:
+	soughtGraph = makeFilename(form) # Filename without extension.
+	satGraph = soughtGraph + '_sat'
+	groundGraph = soughtGraph + '_gnd'
+
+	print "Recent date available:"
+	print latestData()
+
+	"""if graphCached(satGraph+config.EXT) and graphCached(groundGraph+config.EXT):
+		insertImageAndDataLink(satGraph)
+		insertImageAndDataLink(groundGraph)
+	
+	elif form["querytype"].value == "rain": # We need to sum the data
+		makeNewSumGraphs(form,soughtGraph,
+				 form["startday"].value,
+				 form["startmonth"].value,
+				 form["startyear"].value,
+				 form["endday"].value,
+				 form["endmonth"].value,
+				 form["endyear"].value ) 
+
+	else: # We need to average the data
+		makeNewAverageGraphs(form,soughtGraph,
+				 form["startday"].value,
+				 form["startmonth"].value,
+				 form["startyear"].value,
+				 form["endday"].value,
+				 form["endmonth"].value,
+				 form["endyear"].value )""" 
+	print "</body></html>"
+
 else:
 	print "</body></html>"
