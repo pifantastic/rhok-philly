@@ -161,6 +161,7 @@ def graph_result(result_tuples,filename):
   plt.xlabel("Longitude")
   plt.ylabel("Latitude")
   plt.savefig(filename,dpi=150)
+  plt.figure()
 
 if __name__ == "__main__":
   
