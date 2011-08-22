@@ -37,7 +37,7 @@ datatypeDict = dict({#"solarradiation":"solar radiation",
 def insertHeader():
 	print 'Content-Type: text/html\n\n'
 	print '<html><head><title>Climate Data Result</title>'
-	print '  <link rel="stylesheet" type="text/css" href="stylesheet.css" />'
+	print '<link rel="stylesheet" type="text/css" href="stylesheet.css"/>'
 	print '</head>\n<body>'
 	print '<h2>Satellite and Local Climate Data Monitoring Platform</h2>'
 
@@ -76,11 +76,7 @@ def printYearRanges():
 
 def printDataOptions():
 	"""Prints radio buttons for data types given in a global dictionary."""
-<<<<<<< HEAD
-	print 'Select a type of data to retrieve:'
-=======
 	print 'Select a type of data to retrieve:<br/>'
->>>>>>> 52c910ee9e832b2d9db8b5620ae2773e4d8e80f1
 	for key,val in datatypeDict.items():
 		print h.inputRadioButton("querytype",key) + val + '<br/>'
 
@@ -233,10 +229,56 @@ elif "querytype" not in form:
 	print '</body></html>'
 elif "singleday" in form:
 	soughtGraph = makeFilename(form) # Filename without extension.
-	if graphCached(soughtGraph+config.EXT):
-		insertImageAndDataLink(soughtGraph)
-	else:
-		tuples = get_daily_field_values(form["day"].value,
+	satGraph = soughtGraph + '_sat'
+	groundGraph = soughtGraph + '_gnd'
+	if graphCached(satGraph+config.EXT) and graphCached(groundGraph+config.EXT):
+		insertImageAndDataLink(satGraph)
+		insertImageAndDataLink(groundGraph)
+	
+	else: #if form["querytype"]=="rain": # We need to sum the data
+		satTuples = get_field_sums_for_timespan(
+			form["querytype"].value,
+			'sat',
+			form["day"].value,
+		       form["month"].value,
+		       form["year"].value,
+			form["day"].value,
+		       form["month"].value,
+		       form["year"].value) # We call the same start and end day for singleday
+
+		graph_result(satTuples, config.IMAGERESULTPATH + satGraph + config.EXT)
+		print '<p><br/><img src="'+config.IMAGERESULTPATH+satGraph+config.EXT+'"/></p>'
+		exporter = csv.writer(open(config.DATAEXPORTPATH+satGraph+'.csv','w'), delimiter=',')
+		exporter.writerow(["latitude","longitude","value"])
+		for entry in satTuples:
+			exporter.writerow(list(entry))
+
+		print '<p>Download the data set as a csv: ',
+		print '<a href="'+config.DATAEXPORTPATH+satGraph+'.csv">',
+		print satGraph+'</a></p>'
+
+		groundTuples = get_field_sums_for_timespan(
+			form["querytype"].value,
+			'ground',
+			form["day"].value,
+		       form["month"].value,
+		       form["year"].value,
+			form["day"].value,
+		       form["month"].value,
+		       form["year"].value) # We call the same start and end day for singleday
+
+		graph_result(groundTuples, config.IMAGERESULTPATH + groundGraph + config.EXT)
+		print '<p><br/><img src="'+config.IMAGERESULTPATH+groundGraph+config.EXT+'"/></p>'
+		exporter = csv.writer(open(config.DATAEXPORTPATH+groundGraph+'.csv','w'), delimiter=',')
+		exporter.writerow(["latitude","longitude","value"])
+		for entry in groundTuples:
+			exporter.writerow(list(entry))
+
+		print '<p>Download the data set as a csv: ',
+		print '<a href="'+config.DATAEXPORTPATH+groundGraph+'.csv">',
+		print groundGraph+'</a></p>'
+
+		"""tuples = get_daily_field_values(form["day"].value,
 			       form["month"].value,
 			       form["year"].value,
 			       form["querytype"].value)
@@ -249,7 +291,7 @@ elif "singleday" in form:
 
 		print '<p>Download the data set as a csv: ',
 		print '<a href="'+config.DATAEXPORTPATH+soughtGraph+'.csv">',
-		print soughtGraph+'</a></p>'
+		print soughtGraph+'</a></p>'"""
         print "</body></html>"
 else:
 	print "</body></html>"
