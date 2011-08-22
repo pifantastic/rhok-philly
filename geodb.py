@@ -120,7 +120,7 @@ def station_ensure_locid(lat, lng, stationid, locname):
 	cur = conn.cursor()
 	cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'ground';", (lat, lng))
 	shouldbeone = cur.fetchone()
-	if(shouldbeone not None):
+	if(shouldbeone is not None):
 		return shouldbeone[0]
 	else:
 		cur.execute("INSERT INTO location(sourceid, lat, lng, stationid, locname) VALUES (%s, %s, %s, %s, %s) RETURNING locid;", ("ground", lat, lng, stationid, locname))
