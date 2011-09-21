@@ -35,8 +35,41 @@ map
 sub readsplit
 {
 my ($fn, $srcdir, $targdir) = @_;
-# TODO
+
+my $srcfile = "$srcdir/$fn";
+my $fn_iter = 1;
+my $line_iter = 0;
+open(SRC, $srcfile) || die "Failed to open [$srcfile]:$!\n";
+my $headerline = readline(SRC);
+my $targfile = correct_targ_filename("$targdir/$fn", $fn_iter);
+open(TARG, ">$targfile") || die "Failed to open [$targfile]:$!\n";
+print TARG $headerline;
+
+while(my $datline = <SRC>)
+	{
+	if($line_iter > $splitsize)
+		{ # Reopen to new FN
+		close(TARG);
+		$fn_iter++;
+		$targfile = correct_targ_filename($targdir/$fn, $fn_iter);
+		open(TARG, ">$targfile") || die "Failed to open [$targfile]:$!\n";
+		print TARG $headerline;
+		$line_iter = 0;
+		}
+	print TARG $datline;
+	$line_iter++;
+	}
+close(TARG);
+close(SRC);
 }
+
+sub correct_targ_filename
+{ # Add _suffix into filename before extension
+my($tfn, $offset) = @_;
+$tfn =~ s/\./_$offset\./;
+return $tfn;
+}
+
 
 sub handle_args
 {
