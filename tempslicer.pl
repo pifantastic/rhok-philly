@@ -23,7 +23,7 @@ my @args = @ARGV;
 my ($srcdir, $targdir) = handle_args(@args);
 opendir(SRC, $srcdir);
 my @to_parse = 	grep {$_ =~ /csv$/} # all csvs
-		grep {-f $_} # From all files
+		grep {-f "$srcdir/$_"} # From all files
 		readdir(SRC); # In the sourcedir
 closedir(SRC);
 map
@@ -51,7 +51,7 @@ while(my $datline = <SRC>)
 		{ # Reopen to new FN
 		close(TARG);
 		$fn_iter++;
-		$targfile = correct_targ_filename($targdir/$fn, $fn_iter);
+		$targfile = correct_targ_filename("$targdir/$fn", $fn_iter);
 		open(TARG, ">$targfile") || die "Failed to open [$targfile]:$!\n";
 		print TARG $headerline;
 		$line_iter = 0;
