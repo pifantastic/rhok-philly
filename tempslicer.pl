@@ -47,6 +47,7 @@ print TARG $headerline;
 
 while(my $datline = <SRC>)
 	{
+	next if($datline =~ /^,/); # Skip malformed lines. Sigh.
 	if($line_iter > $splitsize)
 		{ # Reopen to new FN
 		close(TARG);
