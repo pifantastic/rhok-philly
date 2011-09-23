@@ -104,7 +104,7 @@ def sat_getlocid(lat, lng):
 	conn = opendb()
 	curs = conn.cursor()
 	curs.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'sat';", (lat, lng))
-	shouldbeone = curs.fetchone()
+	shouldbeone = curs.rowcount
 	if(shouldbeone > 0):
 		return curs.fetchone()[0]
 	else:
@@ -119,7 +119,7 @@ def station_ensure_locid(lat, lng, stationid, locname):
 	conn = opendb()
 	curs = conn.cursor()
 	curs.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'ground';", (lat, lng))
-	shouldbeone = curs.fetchone()
+	shouldbeone = curs.rowcount
 	if(shouldbeone is not None):
 		return shouldbeone[0]
 	else:
