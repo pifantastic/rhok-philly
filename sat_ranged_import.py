@@ -27,7 +27,7 @@ def usage(exit_code=0):
   print __doc__ % globals()
   sys.exit(exit_code)
 
-def fetch_nasa_data_for_daterange(lat=10, lng=10, yearstart=1989, yearend=1990, monthstart=1, monthend=12, daystart=1, dayend=31):  
+def fetch_nasa_data_for_daterange(lat, lng, yearstart=1989, yearend=1990, monthstart=1, monthend=12, daystart=1, dayend=31):  
   NASA_URL = 'http://earth-www.larc.nasa.gov/cgi-bin/cgiwrap/solar/agro.cgi?email=agroclim@larc.nasa.gov'
 
   # Original: 1983-2011
@@ -48,6 +48,7 @@ def fetch_nasa_data_for_daterange(lat=10, lng=10, yearstart=1989, yearend=1990, 
 # Is a bulk-fetch the best way to do this?
 # Also: This should be modified so if there already is data, it will not try to import it again.
 #	That same code probably will handle incremental imports.
+
   request = urllib2.Request(NASA_URL, urllib.urlencode(params))
   response = urllib2.urlopen(request)
   lines = response.read().strip().split("\n")
@@ -64,8 +65,11 @@ def fetch_nasa_data_for_daterange(lat=10, lng=10, yearstart=1989, yearend=1990, 
   dewpoint_fieldid		= get_fieldid_for_field("dewpoint")
   humidity_fieldid		= get_fieldid_for_field("humidity")
 
-  for data in lines[6:]:
+  for data in lines:
     data = data.split(None)
+    print "[" + str(data) + "]"
+    if((len(data) == 0) or (data[0].startswith("!") ) or (data[0].startswith("@") ) or (data[0].startswith("*")) or (data[0] == "NASA") ):
+	continue
     # print("Fetching for " + data[0] + " plus " + str(int(data[1]) - 1) + "\n")
     date = datetime.date(int(data[0]), 1, 1) + datetime.timedelta(days=int(data[1]) - 1)
     geots = get_geotsid(date, locid)
@@ -88,7 +92,7 @@ def fetch_nasa_data_for_daterange(lat=10, lng=10, yearstart=1989, yearend=1990, 
 
 if __name__ == "__main__":
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "h", ['daystart', 'dayend', 'monthstart', 'monthend', 'yearstart', 'yearend'])
+    opts, args = getopt.getopt(sys.argv[1:], "h", ['daystart=', 'dayend=', 'monthstart=', 'monthend=', 'yearstart=', 'yearend='])
   except getopt.GetoptError, err:
     print str(err)
     usage(1)
@@ -121,6 +125,6 @@ if __name__ == "__main__":
     reader.next()
 
     for row in reader:
-      print("Fetching weather data for lat=%s, lng=%s" %(row[0], row[1]))
+      print("Fetching weather data for lat=%s, lng=%s, ys=%s ye=%s" %(row[0], row[1], yearstart, yearend))
       fetch_nasa_data_for_daterange(row[0], row[1], yearstart, yearend, monthstart, monthend, daystart, dayend)
 
