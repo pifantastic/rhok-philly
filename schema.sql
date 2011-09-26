@@ -44,6 +44,8 @@ CREATE TABLE geovalue (
   geoval DOUBLE PRECISION
 );
 
+CREATE INDEX ON geotimespace(locid);
+
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO apache;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO apache;
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO apache;
