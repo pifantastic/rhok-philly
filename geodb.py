@@ -120,8 +120,8 @@ def station_ensure_locid(lat, lng, stationid, locname):
 	curs = conn.cursor()
 	curs.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'ground';", (lat, lng))
 	shouldbeone = curs.rowcount
-	if(shouldbeone is not None):
-		return shouldbeone[0]
+	if(shouldbeone > 0):
+		return curs.fetchone()[0]
 	else:
 		curs.execute("INSERT INTO location(sourceid, lat, lng, stationid, locname) VALUES (%s, %s, %s, %s, %s) RETURNING locid;", ("ground", lat, lng, stationid, locname))
 		conn.commit()

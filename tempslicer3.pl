@@ -49,6 +49,7 @@ while(my $datline = <SRC>)
 	next if($datline =~ /^,/); # Skip malformed lines. Sigh.
 #	print "$srcfile D: $datline\n";
 	next unless ($datline =~ /$yearsearch/); # Year restriction is the whole point
+	next if($datline =~ /^2\/29\/2000/); # 2000 is a leap year and has a 29 Feb. 1990 does not.
 	$datline =~ s/\/1999/\/1989/; # one of these should work.
 	$datline =~ s/\/2000/\/1990/;
 	print TARG $datline;

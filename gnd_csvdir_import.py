@@ -50,33 +50,47 @@ def import_csv_data(sep, fname):
 	rain_fieldid    = get_fieldid_for_field("rain")
 	stationid = int(fname.split("_")[-1].split(".")[0]) + 100
 	locid = get_locid_from_stationid(str(stationid))
+	fname_short = fname.split("/")[-1]
 	if(locid == None):
 		print "No station location with station id " + stationid
 	else:
-		if(fname.startswith("TMP_")): # Temperature data
-			reader = csv.DictReader(fname) # We require fields (and header): date,tempmax,tempmin
+		if(fname_short.startswith("TMP_")): # Temperature data
+			csvhandle = open(fname, "rb")
+			csvdialect = csv.Sniffer().sniff(csvhandle.read(1024))
+			csvhandle.seek(0)
+			reader = csv.DictReader(csvhandle) # We require fields (and header): date,tempmax,tempmin
 			for row in reader:
-				tsid = get_geotsid(row["DATE"], locid)
+				tsid = get_geotsid(date_csvtosql(row["DATE"]), locid)
 				set_geodata_by_fieldid(tsid, tempmax_fieldid, row["MAX"])
 				set_geodata_by_fieldid(tsid, tempmin_fieldid, row["MIN"])
-		elif(fname.startswith("PCP_")): # Precipitation data
-			reader = csv.DictReader(fname) # We require fields (and header): date, rain
+		elif(fname_short.startswith("PCP_")): # Precipitation data
+			csvhandle = open(fname, "rb")
+			csvdialect = csv.Sniffer().sniff(csvhandle.read(1024))
+			csvhandle.seek(0)
+			reader = csv.DictReader(csvhandle) # We require fields (and header): date,tempmax,tempmin
 			for row in reader:
-				tsid = get_geotsid(row["DATE"], locid)
+				tsid = get_geotsid(date_csvtosql(row["DATE"]), locid)
 				set_geodata_by_fieldid(tsid, rain_fieldid, row["RAIN"])
 		else:
 			print "Ignoring file " + fname
 
-def insert_ground_data():
-	temperature_files = glob.glob(config.GROUNDDATAPATH + "TMP_*.dbf")
+def insert_ground_data(datadir):
+	print "Looking in " + datadir + "/*.csv"
+	temperature_files = glob.glob(datadir + "/TMP_*.csv")
 	temperature_files.sort()
 	for filename in temperature_files:
+		print "Parse: " + filename
 		import_csv_data(",", filename)
-	precip_files = glob.glob(config.GROUNDDATAPATH + "PCP_*.dbf")
+	precip_files = glob.glob(datadir + "/PCP_*.csv")
 	precip_files.sort()
 	for filename in precip_files:
 		import_csv_data(",", filename)
 	
+
+def date_csvtosql(slashdate):
+	''' D/M/Y to Y-M-D '''
+	month, day, year = slashdate.split("/")
+	return year + "-" + month + "-" + day
 
 ###################################################
 # main()
@@ -87,6 +101,6 @@ def insert_ground_data():
 
 if __name__ == "__main__":
 
-  datadir = sys.argv[0]
+  datadir = sys.argv[1]
   insert_ground_loc_csv('data/local_weather.csv')
-  insert_ground_data()
+  insert_ground_data(datadir)

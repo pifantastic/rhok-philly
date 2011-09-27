@@ -154,13 +154,13 @@ def import_csv_data(sep, fname, loctype):
 		print "No station location with station id " + stationid
 	else:
 		if(fname.startswith("TMP_")): # Temperature data
-			reader = csv.DictReader(fname) # We require fields (and header): date,tempmax,tempmin
+			reader = csv.DictReader(open(fname,'rb')) # We require fields (and header): date,tempmax,tempmin
 			for row in reader:
 				tsid = get_geotsid(row["date"], locid)
 				set_geodata_by_fieldid(tsid, tempmax_fieldid, row["tempmax"])
 				set_geodata_by_fieldid(tsid, tempmin_fieldid, row["tempmin"])
 		elif(fname.startswith("PCP_")): # Precipitation data
-			reader = csv.DictReader(fname) # We require fields (and header): date, rain
+			reader = csv.DictReader(open(fname,'rb')) # We require fields (and header): date, rain
 			for row in reader:
 				tsid = get_geotsid(row["date"], locid)
 				set_geodata_by_fieldid(tsid, rain_fieldid, row["rain"])
