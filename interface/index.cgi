@@ -18,10 +18,10 @@ cgitb.enable()  # Enabling traceback to display in the browser.
 
 # Un-comment lines to include them in the interface option
 datatypeDict = dict({#"solarradiation":"solar radiation",
-		     #"tempmax":"maximum temperature",
-		     #"tempmin":"minimum temperature",
+		     "tempmax":"maximum temperature",
+		     "tempmin":"minimum temperature"
 		     #"tempmedian":"median temperature",
-		     "rain":"precipitation" # Add comma when uncommenting!
+		     #"rain":"precipitation" # Add comma when uncommenting!
 		     #"wind":"wind speed",
 		     #"dewpoint":"dew point",
 		     #"humidity":"humidity"
@@ -184,8 +184,9 @@ def insertAvailabilityNote():
 	print '<p>Information is available from %s to %s.</p>' % (startdate, enddate)
 
 def insertImageAndDataLink(filename):
+	print '<h2>Temperature units are in degrees Celsius.</h2>'
 	print "<p><img src='"+config.IMAGERESULTPATH+filename+config.EXT+"'/>"
-	print '<br/>Download the data set as a csv: ',
+	print '<br/>Temperature units are in degrees Celsius.<br/> Download the data set as a csv: ',
 	print '<a href="'+config.DATAEXPORTPATH+filename+'.csv">',
 	print filename+'.csv</a></p>'
 
