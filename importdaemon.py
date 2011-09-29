@@ -17,9 +17,11 @@ from dbutils import *
 from importdaemonlib import *
 from importworker import *
 from config import *
+from sat_ranged_import import *
 import psycopg2
 import config	# If this fails, move the template to an actual file
 from ftplib import FTP
+from datetime import date
 
 if sys.version < '2.7':
 	print "Requires Python 2.7, you have", sys.version
@@ -56,6 +58,16 @@ def handle_source_update(source):
 			get_file(source, thisfile)
 			db_import_file(source, thisfile)
 		mark_source_current(source)
+	elif(protocol == "http"):
+		lastday, lastmonth, lastyear = time.strptime(lastupdate, "%Y-%m-%d")
+		today_dt = date.today()
+		reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',') # FIXME Might be good to rely on database instead of files
+		reader.next()
+
+		for row in reader:
+			fetch_nasa_data_for_daterange(row[0], row[1], lastyear, today.year, lastmonth, today.month, lastday, today.day)
+		mark_source_current(source)
+
 	else:
 		print "Unsupported protocol %s" % protocol
 		exit(1)

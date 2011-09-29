@@ -10,6 +10,7 @@ Synopsis: import.py
 	-h  This help message
 	-s  Import satellite data
 	-g  Import ground data
+	-a  Register areas only
 	-c  Create database
 	
 	Requires Python 2.7
@@ -25,6 +26,7 @@ if sys.version < '2.7':
 VERSION = '0.9'
 IMPORT_SAT = False
 IMPORT_GROUND = False
+AREAS_ONLY = False
 CREATE_DB = False
 DAYS_IMPORT = 365 * 2 # Temporarily limiting to the first two years of data because there's so much
 
@@ -152,18 +154,46 @@ def import_csv_data(sep, fname, loctype):
 		print "No station location with station id " + stationid
 	else:
 		if(fname.startswith("TMP_")): # Temperature data
-			reader = csv.DictReader(fname) # We require fields (and header): date,tempmax,tempmin
+			reader = csv.DictReader(open(fname,'rb')) # We require fields (and header): date,tempmax,tempmin
 			for row in reader:
 				tsid = get_geotsid(row["date"], locid)
 				set_geodata_by_fieldid(tsid, tempmax_fieldid, row["tempmax"])
 				set_geodata_by_fieldid(tsid, tempmin_fieldid, row["tempmin"])
 		elif(fname.startswith("PCP_")): # Precipitation data
-			reader = csv.DictReader(fname) # We require fields (and header): date, rain
+			reader = csv.DictReader(open(fname,'rb')) # We require fields (and header): date, rain
 			for row in reader:
 				tsid = get_geotsid(row["date"], locid)
 				set_geodata_by_fieldid(tsid, rain_fieldid, row["rain"])
 		else:
 			print "Ignoring file " + fname
+
+def import_csv_data_two_underscores(sep, fname, loctype):
+	''' Just like the above but handles files with TYPE_AREA_FILEID form. Also handles paths better '''
+	print "CSV parser parsing file " + fname + " loctype=" + loctype + " sep=[" + sep + "]"
+	fname_lastpart  = fname.split("/")[-1]
+	tempmax_fieldid = get_fieldid_for_field("tempmax")
+	tempmin_fieldid = get_fieldid_for_field("tempmin")
+	rain_fieldid    = get_fieldid_for_field("rain")
+	stationid = int(fname.split("_")[-2].split(".")[0]) + 100
+	locid = get_locid_from_stationid(str(stationid))
+	if(locid == None):
+		print "No station location with station id " + stationid
+	else:
+		if(fname_lastpart.startswith("TMP_")): # Temperature data
+			reader = csv.DictReader(open(fname, 'rb')) # We require fields (and header): date,max,min
+			for row in reader:
+				tsid = get_geotsid(row["DATE"], locid)
+				set_geodata_by_fieldid(tsid, tempmax_fieldid, row["MAX"])
+				set_geodata_by_fieldid(tsid, tempmin_fieldid, row["MIN"])
+		elif(fname_lastpart.startswith("PCP_")): # Precipitation data
+			reader = csv.DictReader(open(fname,'rb')) # We require fields (and header): date, rain
+			for row in reader:
+				tsid = get_geotsid(row["date"], locid)
+				set_geodata_by_fieldid(tsid, rain_fieldid, row["rain"])
+		else:
+			print "Ignoring file " + fname
+
+
 
 # import xlrd
 # Note that this is CC-BY-NC, and may have license implications!
@@ -284,7 +314,7 @@ def OLD_insert_ground_data():
 
 if __name__ == "__main__":
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hgsc")
+    opts, args = getopt.getopt(sys.argv[1:], "hgsca")
   except getopt.GetoptError, err:
     print str(err)
     usage(1)
@@ -294,6 +324,7 @@ if __name__ == "__main__":
     elif o == "-g": IMPORT_GROUND = True
     elif o == "-s": IMPORT_SAT = True
     elif o == "-c": CREATE_DB = True
+    elif o == "-a": AREAS_ONLY = True
     else: assert False, "unhandled option"
 
   if CREATE_DB:
@@ -303,11 +334,17 @@ if __name__ == "__main__":
   if IMPORT_SAT:
     reader = csv.reader(open('data/grid-sample-unique.csv', 'rU'), delimiter=',')
     reader.next()
-  
-    for row in reader:
-      print("Fetching weather data for lat=%s, lng=%s" %(row[0], row[1]))
-      fetch_nasa_data(row[0], row[1])
+
+    if(AREAS_ONLY):
+      for row in reader:
+        locid = sat_getlocid(row[0],row[1])
+
+    if(not(AREAS_ONLY)):  
+      for row in reader:
+        print("Fetching weather data for lat=%s, lng=%s" %(row[0], row[1]))
+        fetch_nasa_data(row[0], row[1])
   
   if IMPORT_GROUND:
     insert_ground_loc_csv('data/local_weather.csv')
-    insert_ground_data()
+    if(not(AREAS_ONLY)):
+      insert_ground_data()

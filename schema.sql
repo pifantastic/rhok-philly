@@ -13,14 +13,6 @@ CREATE TABLE geotimespace (
   geotsid SERIAL UNIQUE,
   date DATE,
   locid INTEGER REFERENCES location(locid)
---  solarradiation DOUBLE PRECISION,
---  tempmax DOUBLE PRECISION,
---  tempmin DOUBLE PRECISION,
---  tempmedian DOUBLE PRECISION,
---  rain DOUBLE PRECISION,
---  wind DOUBLE PRECISION,
---  dewpoint DOUBLE PRECISION,
---  humidity DOUBLE PRECISION
 );
 
 CREATE TABLE geofield (
@@ -43,6 +35,11 @@ CREATE TABLE geovalue (
   geofieldid INTEGER REFERENCES geofield(fieldid),
   geoval DOUBLE PRECISION
 );
+
+CREATE INDEX ON geotimespace(locid);
+CREATE INDEX ON geotimespace(date);
+CREATE INDEX ON geovalue(geotsid);
+
 
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO apache;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO apache;

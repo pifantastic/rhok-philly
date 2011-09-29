@@ -1,0 +1,1 @@
+INSERT INTO datasource(sourcename,updinterval,protocol,loctype,site,path) VALUES ('rhoktest2gd','10 minutes','ftp','ground','localhost','/pub/rhoktest2');

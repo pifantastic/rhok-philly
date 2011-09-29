@@ -1,0 +1,7 @@
+./importer.py -c
+./importer.py -a -g
+./importer.py -a -s
+psql geodb < importdaemon.sql
+(insert the settings for the importdaemon)
+./importdaemon.py
+

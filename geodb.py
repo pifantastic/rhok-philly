@@ -67,19 +67,19 @@ def get_locid_from_stationid(stationid):
 	''' Given a string stationid, return the locationid '''
 	conn = opendb()
 	curs = conn.cursor()
-	cur.execute("SELECT locid FROM location WHERE stationid = %s;", (str(source_num),))
+	curs.execute("SELECT locid FROM location WHERE stationid = %s;", (stationid,))
 	return curs.fetchone()[0]
 
 def set_geodata_by_fieldid(geotsid, fieldid, value):
 	"""Arguments: geotsid, fieldid, value of data to insert or update."""
 	conn = opendb()
-	cur = conn.cursor()
-	cur.execute("SELECT geovalueid FROM geovalue WHERE geotsid=%s AND geofieldid=%s;", (geotsid, fieldid)) # Does this data exist?
-	exists = cur.rowcount
+	curs = conn.cursor()
+	curs.execute("SELECT geovalueid FROM geovalue WHERE geotsid=%s AND geofieldid=%s;", (geotsid, fieldid)) # Does this data exist?
+	exists = curs.rowcount
 	if(exists == 0):
-		cur.execute("INSERT INTO geovalue (geotsid, geofieldid, geoval) VALUES (%s, %s, %s);", (geotsid,fieldid,value))
+		curs.execute("INSERT INTO geovalue (geotsid, geofieldid, geoval) VALUES (%s, %s, %s);", (geotsid,fieldid,value))
 	else:
-		cur.execute("UPDATE geovalue SET geoval=%s WHERE geotsid=%s AND geofieldid=%s;", (value, geotsid, fieldid))
+		curs.execute("UPDATE geovalue SET geoval=%s WHERE geotsid=%s AND geofieldid=%s;", (value, geotsid, fieldid))
 	conn.commit()
 
 def get_geotsid(date, locid):
@@ -89,41 +89,41 @@ def get_geotsid(date, locid):
 	If there is not yet a geotsid for the given information, this function
 	generates a new one."""
 	conn = opendb()
-	cur = conn.cursor()
-	cur.execute("SELECT geotsid FROM geotimespace WHERE date=%s AND locid=%s;", (date, locid))
-	shouldbeone = cur.rowcount
+	curs = conn.cursor()
+	curs.execute("SELECT geotsid FROM geotimespace WHERE date=%s AND locid=%s;", (date, locid))
+	shouldbeone = curs.rowcount
 	if(shouldbeone == 1):
-		return cur.fetchone()[0]
+		return curs.fetchone()[0]
 	else: # We didn't get a geotsid, so let's make one
-		cur.execute("INSERT INTO geotimespace(date,locid) VALUES (%s, %s) RETURNING geotsid;", (date, locid))
+		curs.execute("INSERT INTO geotimespace(date,locid) VALUES (%s, %s) RETURNING geotsid;", (date, locid))
 		conn.commit()
-		return cur.fetchone()[0]
+		return curs.fetchone()[0]
 
 def sat_getlocid(lat, lng):
 	"""Returns locid (an integer) for the given latitude and longitude."""
 	conn = opendb()
-	cur = conn.cursor()
-	cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'sat';", (lat, lng))
-	shouldbeone = cur.fetchone()
+	curs = conn.cursor()
+	curs.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'sat';", (lat, lng))
+	shouldbeone = curs.rowcount
 	if(shouldbeone > 0):
-		return cur.fetchone()[0]
+		return curs.fetchone()[0]
 	else:
-		cur.execute("INSERT INTO location (sourceid, lat, lng) VALUES ('sat', %s, %s) RETURNING locid;", (lat, lng))
+		curs.execute("INSERT INTO location (sourceid, lat, lng) VALUES ('sat', %s, %s) RETURNING locid;", (lat, lng))
 		conn.commit()
-		return cur.fetchone()[0]
+		return curs.fetchone()[0]
 
 def station_ensure_locid(lat, lng, stationid, locname):
 	"""Arguments: latitude, logitude, stationid, location name
 	Returns the locid for the given station information, creating a new
 	locid if one does not already exist."""
 	conn = opendb()
-	cur = conn.cursor()
-	cur.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'ground';", (lat, lng))
-	shouldbeone = cur.fetchone()
-	if(shouldbeone is not None):
-		return shouldbeone[0]
+	curs = conn.cursor()
+	curs.execute("SELECT locid FROM location WHERE lat = %s AND lng = %s AND sourceid = 'ground';", (lat, lng))
+	shouldbeone = curs.rowcount
+	if(shouldbeone > 0):
+		return curs.fetchone()[0]
 	else:
-		cur.execute("INSERT INTO location(sourceid, lat, lng, stationid, locname) VALUES (%s, %s, %s, %s, %s) RETURNING locid;", ("ground", lat, lng, stationid, locname))
+		curs.execute("INSERT INTO location(sourceid, lat, lng, stationid, locname) VALUES (%s, %s, %s, %s, %s) RETURNING locid;", ("ground", lat, lng, stationid, locname))
 		conn.commit()
-		return cur.fetchone()[0]
+		return curs.fetchone()[0]
 

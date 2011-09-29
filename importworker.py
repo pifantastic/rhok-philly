@@ -4,6 +4,7 @@
 ''' importworker.py - A component that takes a source and a file and
 figures out the right way to shove it into the database. '''
 
+from importdaemonlib import *
 from string import *
 from importer import *
 from geodb import *
@@ -15,7 +16,8 @@ def db_import_file(source, thisfile):
 	print "db_import_file: " + thisfile
 	extension = split(thisfile, '.')[-1]
 	loctype = get_source_loctype(source)
-	handle_db_import(loctype, extension, thisfile) # Do we really need source? Maybe we don't!
+	realpath = get_cache_filedir(source) + '/' + thisfile
+	handle_db_import(loctype, extension, realpath) # Do we really need source? Maybe we don't!
 
 def handle_db_import(loctype, extension, thisfile):
 	''' Based on file extension, actually call the appropriate import routines '''
@@ -56,7 +58,7 @@ def handle_delimited_input(sep, fname, loctype):
 	If the separator is ' ', split on any whitespace.
 	'''
 	if(loctype == "ground"):
-		import_csv_data(sep, fname, loctype)
+		import_csv_data_two_underscores(sep, fname, loctype)
 	else:
 		die("Sky data in CSV format is not yet supported.")
 

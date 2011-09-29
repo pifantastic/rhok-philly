@@ -6,7 +6,7 @@ import os, sys, urllib, urllib2, getopt, csv, datetime, config, glob, subprocess
 from config import *	# If this fails, move the template to an actual file
 from dbutils import *
 import psycopg2
-import importworker
+#import importworker
 from ftplib import FTP
 
 
@@ -191,7 +191,8 @@ def get_httpfile(url):
 
 def get_cache_filedir(source):
 	''' Where are our cachefiles stored? Use this to sync '''
-	sourcetype = get_protocol(source)
+	protocol = get_protocol(source)
+	sourcetype = get_source_loctype(source)
 	if(protocol == "ftp"):
 		mkdir_p((DATCACHE + "%s") % source)
 		return DATCACHE + "%s" % source 
