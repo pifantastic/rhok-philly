@@ -16,9 +16,10 @@ import csv
 cgitb.enable()  # Enabling traceback to display in the browser.
 #cgitb.enable(display=0, logdir="/tmp")   # Use this for more privacy.
 
+# Un-comment lines to include them in the interface option
 datatypeDict = dict({#"solarradiation":"solar radiation",
-		     "tempmax":"maximum temperature",
-		     "tempmin":"minimum temperature",
+		     #"tempmax":"maximum temperature",
+		     #"tempmin":"minimum temperature",
 		     #"tempmedian":"median temperature",
 		     "rain":"precipitation" # Add comma when uncommenting!
 		     #"wind":"wind speed",
@@ -81,7 +82,7 @@ def printDataOptions():
 		print h.inputRadioButton("querytype",key) + val + '<br/>'
 
 def monthAvgForm():
-	""" This is form would select a month to investigate and the  """
+	""" This is form would select a month to investigate, the range of years, and the data type. analysis.py supports this kind of query, but right now the interface does not offer this option. """
 	print '<form class="formblock" id="formid" name="climateform" action="index.cgi" method="post" enctype="multipart/form-data">'
 	print '<h3>Monthly Averages</h3>'
 	print '<p id="col_1"><em>Month:</em>',
@@ -100,6 +101,7 @@ def monthAvgForm():
 	print '</p>\n</form>'
 
 def singleDayForm():
+	""" Print form for selecting data for a single day. """
 	print '<form class="formblock" id="formid" name="climateform" action="index.cgi" method="post" enctype="multipart/form-data">'
 	print '<h3>Single Day Data</h3>'
 	print '<p id="col_1">'
@@ -159,15 +161,16 @@ def dataForm():
 	print h.inputSubmit("singleday","get data")
 	print '</p>'
 
-	# Last N years
-	print '<p>'
+	# Last N years 
+	# (not totally implemented; see notes in CGI handler section below)
+	"""print '<p>'
 	print 'Get data from the last ',
 	print '<select name="years">'
 	printYearRanges() # This should change based on database availability
 	print '</select>'
 	print 'years.'
 	print h.inputSubmit("pastyears","get data")
-	print '</p>'
+	print '</p>'"""
 	print '</form>'
 
 def insertQueryMenu():
@@ -378,14 +381,19 @@ elif "pastyears" in form:
 	satGraph = soughtGraph + '_sat'
 	groundGraph = soughtGraph + '_gnd'
 
-	print "Recent date available:"
-	print latestData()
+	#print "Recent date available:"
+	#print latestData()
 
-	"""if graphCached(satGraph+config.EXT) and graphCached(groundGraph+config.EXT):
+	if graphCached(satGraph+config.EXT) and \
+		    graphCached(groundGraph+config.EXT):
 		insertImageAndDataLink(satGraph)
 		insertImageAndDataLink(groundGraph)
 	
-	elif form["querytype"].value == "rain": # We need to sum the data
+	# To implement this section, call these using the most recent available
+	# data as the end day (from latestData()), and for the start date 
+	# use same day and month, but subtract the specified number of years 
+	# from the value in latestData().
+	'''elif form["querytype"].value == "rain": # We need to sum the data
 		makeNewSumGraphs(form,soughtGraph,
 				 form["startday"].value,
 				 form["startmonth"].value,
@@ -401,7 +409,7 @@ elif "pastyears" in form:
 				 form["startyear"].value,
 				 form["endday"].value,
 				 form["endmonth"].value,
-				 form["endyear"].value )""" 
+				 form["endyear"].value ) '''
 	print "</body></html>"
 
 else:
