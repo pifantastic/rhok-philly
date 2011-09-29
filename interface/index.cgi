@@ -184,7 +184,7 @@ def insertAvailabilityNote():
 	print '<p>Information is available from %s to %s.</p>' % (startdate, enddate)
 
 def insertImageAndDataLink(filename):
-	print '<h2>Temperature units are in degrees Celsius.</h2>'
+	print '<p><h2>Temperature units are in degrees Celsius.</h2></p>'
 	print "<p><img src='"+config.IMAGERESULTPATH+filename+config.EXT+"'/>"
 	print '<br/>Temperature units are in degrees Celsius.<br/> Download the data set as a csv: ',
 	print '<a href="'+config.DATAEXPORTPATH+filename+'.csv">',
